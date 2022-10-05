@@ -11,9 +11,10 @@ interface IPoll {
         CLOSED
     }
 
-    function mint(address account, uint256 option, uint256 amount, bytes memory data) external;
+    function mint(address account, uint256 pollOptionId, uint256 amount, bytes memory data) external;
 
-    function mintBatch(address to, uint256[] memory options, uint256[] memory amounts, bytes memory data) external;
+    function mintBatch(address to, uint256[] memory pollOptionIds, uint256[] memory amounts, bytes memory data)
+        external;
 
     function isOpen() external view returns (bool);
 
