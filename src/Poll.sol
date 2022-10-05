@@ -8,7 +8,6 @@ import "@openzeppelin-contracts/access/AccessControl.sol";
 import "@src/interfaces/IPoll.sol";
 
 contract Poll is IPoll, ERC1155, AccessControl, ERC1155Supply {
-   
     bytes32 public constant ESCROW_ROLE = keccak256("ESCROW_ROLE");
 
     PollState public state;
@@ -63,7 +62,7 @@ contract Poll is IPoll, ERC1155, AccessControl, ERC1155Supply {
         _mintBatch(to, options, amounts, data);
     }
 
-    function isOpen() external override view returns (bool) {
+    function isOpen() external view override returns (bool) {
         return state == PollState.OPEN;
     }
 
@@ -75,7 +74,13 @@ contract Poll is IPoll, ERC1155, AccessControl, ERC1155Supply {
         state = PollState.OPEN;
     }
 
-    function closePoll(uint256 winningOption) external override onlyRole(ESCROW_ROLE) validOption(winningOption) whenOpen {
+    function closePoll(uint256 winningOption)
+        external
+        override
+        onlyRole(ESCROW_ROLE)
+        validOption(winningOption)
+        whenOpen
+    {
         winner = winningOption;
         state = PollState.CLOSED;
     }

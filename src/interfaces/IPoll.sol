@@ -2,16 +2,14 @@
 pragma solidity ^0.8.13;
 
 interface IPoll {
-
     error InvalidPollOption(uint256 optionId);
 
-
-enum PollState {
+    enum PollState {
         UNDEFINED,
         OPEN,
         PAUSED,
         CLOSED
-}
+    }
 
     function mint(address account, uint256 option, uint256 amount, bytes memory data) external;
 
@@ -20,5 +18,4 @@ enum PollState {
     function isOpen() external view returns (bool);
 
     function closePoll(uint256 winningOption) external;
-
 }
