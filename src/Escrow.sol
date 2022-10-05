@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "./interfaces/IEscrow.sol";
 import "@src/Poll.sol";
+import "@src/interfaces/IPoll.sol";
 import "@openzeppelin-contracts/access/AccessControl.sol";
 import "@openzeppelin-contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin-contracts/token/ERC1155/utils/ERC1155Receiver.sol";
@@ -36,7 +37,7 @@ contract Escrow is IEscrow, ERC1155Holder, AccessControl {
     function submitPollResult(uint256 pollId, uint256 winningId) external override onlyRole(POLL_FINALIZER_ROLE) {
         Poll pollContract = polls[pollId];
 
-        require(pollContract.state() != Poll.PollState.UNDEFINED, "Escrow: does not exist");
+        require(pollContract.state() != IPoll.PollState.UNDEFINED, "Escrow: does not exist");
 
         // close poll and register the winning option
         pollContract.closePoll(winningId);

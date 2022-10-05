@@ -12,7 +12,8 @@
   },
   "scripts": {
     "format": "forge fmt",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build": "forge build"
   },
   "repository": {
     "type": "git",

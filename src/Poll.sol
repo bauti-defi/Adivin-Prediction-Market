@@ -5,17 +5,10 @@ import "@openzeppelin-contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin-contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin-contracts/access/Ownable.sol";
 import "@openzeppelin-contracts/access/AccessControl.sol";
+import "@src/interfaces/IPoll.sol";
 
-contract Poll is ERC1155, AccessControl, ERC1155Supply {
-    error InvalidPollOption(uint256 optionId);
-
-    enum PollState {
-        UNDEFINED,
-        OPEN,
-        PAUSED,
-        CLOSED
-    }
-
+contract Poll is IPoll, ERC1155, AccessControl, ERC1155Supply {
+   
     bytes32 public constant ESCROW_ROLE = keccak256("ESCROW_ROLE");
 
     PollState public state;
@@ -49,6 +42,7 @@ contract Poll is ERC1155, AccessControl, ERC1155Supply {
 
     function mint(address account, uint256 option, uint256 amount, bytes memory data)
         external
+        override
         onlyRole(ESCROW_ROLE)
         validOption(option)
         whenOpen
@@ -58,6 +52,7 @@ contract Poll is ERC1155, AccessControl, ERC1155Supply {
 
     function mintBatch(address to, uint256[] memory options, uint256[] memory amounts, bytes memory data)
         external
+        override
         onlyRole(ESCROW_ROLE)
         whenOpen
     {
@@ -68,7 +63,7 @@ contract Poll is ERC1155, AccessControl, ERC1155Supply {
         _mintBatch(to, options, amounts, data);
     }
 
-    function isOpen() external view returns (bool) {
+    function isOpen() external override view returns (bool) {
         return state == PollState.OPEN;
     }
 
@@ -80,7 +75,7 @@ contract Poll is ERC1155, AccessControl, ERC1155Supply {
         state = PollState.OPEN;
     }
 
-    function closePoll(uint256 winningOption) external onlyRole(ESCROW_ROLE) validOption(winningOption) whenOpen {
+    function closePoll(uint256 winningOption) external override onlyRole(ESCROW_ROLE) validOption(winningOption) whenOpen {
         winner = winningOption;
         state = PollState.CLOSED;
     }
