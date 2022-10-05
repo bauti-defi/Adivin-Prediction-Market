@@ -1,0 +1,28 @@
+{
+  "name": "fifa-prediction-market",
+  "version": "1.0.0",
+  "description": "An EVM based prediction market for the 2022 FIFA World Cup. ",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "format": "forge fmt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bauti-defi/FIFA-Prediction-Market.git"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "market"
+  ],
+  "author": "bauti.eth",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bauti-defi/FIFA-Prediction-Market/issues"
+  },
+  "homepage": "https://github.com/bauti-defi/FIFA-Prediction-Market#readme"
+}
