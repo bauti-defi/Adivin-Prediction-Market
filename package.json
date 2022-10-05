@@ -7,10 +7,12 @@
     "test": "test"
   },
   "devDependencies": {
-    "cz-conventional-changelog": "3.3.0"
+    "cz-conventional-changelog": "3.3.0",
+    "husky": "^8.0.1"
   },
   "scripts": {
-    "format": "forge fmt"
+    "format": "forge fmt",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -31,5 +33,6 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  }
+  },
+  "dependencies": {}
 }
