@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 interface IEscrow {
-
     event PollEnded(uint256 indexed pollId, uint256 winningId, address pollAddress);
     event PollOpened(uint256 indexed pollId, address pollAddress);
 
@@ -18,5 +17,4 @@ interface IEscrow {
     // those tupples are the parameters below
     // ? could be a chainlink oracle or multisig
     function submitPollResult(uint256 pollId, uint256 winningId) external;
-
 }

@@ -7,7 +7,6 @@ import "@openzeppelin-contracts/access/Ownable.sol";
 import "@openzeppelin-contracts/access/AccessControl.sol";
 
 contract Poll is ERC1155, AccessControl, ERC1155Supply {
-
     error InvalidPollOption(uint256 optionId);
 
     enum PollState {
@@ -24,7 +23,7 @@ contract Poll is ERC1155, AccessControl, ERC1155Supply {
     // from 0 to optionCount - 1
     uint256 public immutable optionCount;
     uint256 public winner;
-    
+
     modifier validOption(uint256 optionId) {
         _validOption(optionId);
         _;
@@ -48,17 +47,21 @@ contract Poll is ERC1155, AccessControl, ERC1155Supply {
         state = PollState.OPEN;
     }
 
-    function mint(address account, uint256 option, uint256 amount, bytes memory data) 
-        external 
-        onlyRole(ESCROW_ROLE) validOption(option) whenOpen() {
+    function mint(address account, uint256 option, uint256 amount, bytes memory data)
+        external
+        onlyRole(ESCROW_ROLE)
+        validOption(option)
+        whenOpen
+    {
         _mint(account, option, amount, data);
     }
 
     function mintBatch(address to, uint256[] memory options, uint256[] memory amounts, bytes memory data)
         external
-        onlyRole(ESCROW_ROLE) whenOpen()
+        onlyRole(ESCROW_ROLE)
+        whenOpen
     {
-        for(uint256 i = 0; i < options.length; i++) {
+        for (uint256 i = 0; i < options.length; i++) {
             _validOption(options[i]);
         }
 
@@ -69,32 +72,35 @@ contract Poll is ERC1155, AccessControl, ERC1155Supply {
         return state == PollState.OPEN;
     }
 
-    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) whenOpen() {
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) whenOpen {
         state = PollState.PAUSED;
     }
 
-    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) whenPaused() {
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) whenPaused {
         state = PollState.OPEN;
     }
 
-    function closePoll(uint256 winningOption) external onlyRole(ESCROW_ROLE) validOption(winningOption) whenOpen() {
+    function closePoll(uint256 winningOption) external onlyRole(ESCROW_ROLE) validOption(winningOption) whenOpen {
         winner = winningOption;
         state = PollState.CLOSED;
     }
 
-    function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
-        internal
-        override(ERC1155, ERC1155Supply)
-    {
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override (ERC1155, ERC1155Supply) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC1155, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override (ERC1155, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
     function _validOption(uint256 optionId) private view {
-        if(optionId >= optionCount) revert InvalidPollOption(optionId);
+        if (optionId >= optionCount) revert InvalidPollOption(optionId);
     }
-    
 }
