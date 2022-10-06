@@ -2,8 +2,8 @@
 pragma solidity ^0.8.13;
 
 import "./interfaces/IEscrow.sol";
-import "@src/Poll.sol";
-import "@src/interfaces/IPoll.sol";
+import "@src/PredictionMarket.sol";
+import "@src/interfaces/IPredictionMarket.sol";
 import "@openzeppelin-contracts/access/AccessControl.sol";
 import "@openzeppelin-contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin-contracts/token/ERC1155/utils/ERC1155Receiver.sol";
@@ -14,63 +14,67 @@ import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 contract Escrow is IEscrow, ERC1155Holder, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    bytes32 public constant POLL_STARTER_ROLE = keccak256("POLL_STARTER_ROLE");
-    bytes32 public constant POLL_FINALIZER_ROLE = keccak256("POLL_FINALIZER_ROLE");
+    bytes32 public constant MARKET_CREATOR_ROL = keccak256("MARKET_CREATOR_ROL");
+    bytes32 public constant MARKET_CLOSER_ROLE = keccak256("MARKET_CLOSER_ROLE");
 
-    uint256 public pollIdNonce;
+    uint256 public marketIdNonce;
     IERC20 public immutable paymentToken;
-    mapping(uint256 => PollData) polls;
+    mapping(uint256 => MarketData) markets;
 
     constructor(address token) {
         // set EOA as admin
         _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
-        // set EOA as poll starter
-        _setupRole(POLL_STARTER_ROLE, tx.origin);
+        // set EOA as market creator
+        _setupRole(MARKET_CREATOR_ROL, tx.origin);
         paymentToken = IERC20(token);
     }
 
-    function startPoll(address poll) external override onlyRole(POLL_STARTER_ROLE) {
-        Poll pollContract = Poll(poll);
+    function createMarket(address market) external override onlyRole(MARKET_CREATOR_ROL) {
+        PredictionMarket marketContract = PredictionMarket(market);
 
-        require(pollContract.isOpen(), "Escrow: poll must be open");
+        require(marketContract.isOpen(), "Escrow: market must be open");
 
-        polls[pollIdNonce++] = PollData({poll: pollContract, pot: 0});
+        markets[marketIdNonce++] = MarketData({market: marketContract, pot: 0});
 
-        emit PollOpened(pollIdNonce - 1, poll);
+        emit PredictionMarketCreated(marketIdNonce - 1, market);
     }
 
-    function submitPollResult(uint256 pollId, uint256 winningId) external override onlyRole(POLL_FINALIZER_ROLE) {
-        Poll pollContract = polls[pollId].poll;
+    function submitMarketResult(uint256 marketId, uint256 winningPrediction)
+        external
+        override
+        onlyRole(MARKET_CLOSER_ROLE)
+    {
+        PredictionMarket marketContract = markets[marketId].market;
 
-        require(pollContract.state() != IPoll.PollState.UNDEFINED, "Escrow: Poll is undefined");
+        require(marketContract.state() != IPredictionMarket.MarketState.UNDEFINED, "Escrow: Market is undefined");
 
-        // close poll and register the winning option
-        pollContract.closePoll(winningId);
+        // close market and register the winning option
+        marketContract.closeMarket(winningPrediction);
 
-        emit PollEnded(pollId, winningId, address(pollContract));
+        emit PredictionMarketClosed(marketId, winningPrediction, address(marketContract));
     }
 
-    function buy(uint256 pollId, uint256 pollOptionId, uint256 amount) external override nonReentrant {
+    function buy(uint256 marketId, uint256 predictionId, uint256 amount) external override nonReentrant {
         // transfer their stables into the escrow
         paymentToken.safeTransferFrom(msg.sender, address(this), amount);
 
         // Get the poll
-        PollData storage pollData = polls[pollId];
+        MarketData storage marketData = markets[marketId];
 
         // Check it is defined
-        require(pollData.poll.state() != IPoll.PollState.UNDEFINED, "Escrow: Poll is undefined");
+        require(marketData.market.state() != IPredictionMarket.MarketState.UNDEFINED, "Escrow: Market is undefined");
 
         // update pot
-        pollData.pot += amount;
+        marketData.pot += amount;
 
         // mint option tokens to the msg.sender
-        pollData.poll.mint(msg.sender, pollOptionId, amount, "");
+        marketData.market.mint(msg.sender, predictionId, amount);
 
         // emit event
-        emit PredictionMade(pollId, msg.sender, pollOptionId, amount, pollData.pot);
+        emit PredictionMade(marketId, msg.sender, predictionId, amount, marketData.pot);
     }
 
-    function cashout(uint256 pollId, uint256 optionId) external override nonReentrant {
+    function cashout(uint256 marketId, uint256 predictionId) external override nonReentrant {
         // update token balance for escrow
         // receive option tokens from the msg.sender
         // send stables to the msg.sender

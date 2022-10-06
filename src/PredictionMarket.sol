@@ -5,84 +5,84 @@ import "@openzeppelin-contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin-contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin-contracts/access/Ownable.sol";
 import "@openzeppelin-contracts/access/AccessControl.sol";
-import "@src/interfaces/IPoll.sol";
+import "@src/interfaces/IPredictionMarket.sol";
 
-contract Poll is IPoll, ERC1155, AccessControl, ERC1155Supply {
+contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155Supply {
     bytes32 public constant ESCROW_ROLE = keccak256("ESCROW_ROLE");
 
-    PollState public state;
+    MarketState public state;
 
     // from 0 to optionCount - 1
     uint256 public immutable optionCount;
-    uint256 public winner;
+    uint256 public winningPrediction;
 
-    modifier validOption(uint256 optionId) {
-        _validOption(optionId);
+    modifier validPrediction(uint256 predictionId) {
+        _validPrediction(predictionId);
         _;
     }
 
     modifier whenOpen() {
-        require(state == PollState.OPEN, "Poll: not open");
+        require(state == MarketState.OPEN, "PredictionMarket: not open");
         _;
     }
 
     modifier whenPaused() {
-        require(state == PollState.PAUSED, "Poll: not paused");
+        require(state == MarketState.PAUSED, "PredictionMarket: not paused");
         _;
     }
 
     constructor(uint256 _optionCount) ERC1155("https://localhost:3000") {
-        require(_optionCount > 0, "Poll: optionCount must be > 0");
+        require(_optionCount > 0, "PredictionMarket: optionCount must be > 0");
         // set EOA as admin
         _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
         optionCount = _optionCount;
-        state = PollState.OPEN;
+        state = MarketState.OPEN;
     }
 
-    function mint(address account, uint256 option, uint256 amount, bytes memory data)
+    function mint(address account, uint256 predictionId, uint256 amount)
         external
         override
         onlyRole(ESCROW_ROLE)
-        validOption(option)
+        validPrediction(predictionId)
         whenOpen
     {
-        _mint(account, option, amount, data);
+        _mint(account, predictionId, amount, "");
     }
 
-    function mintBatch(address to, uint256[] memory options, uint256[] memory amounts, bytes memory data)
+    function mintBatch(address to, uint256[] memory predictionIds, uint256[] memory amounts)
         external
         override
         onlyRole(ESCROW_ROLE)
         whenOpen
     {
-        for (uint256 i = 0; i < options.length; i++) {
-            _validOption(options[i]);
+        for (uint256 i = 0; i < predictionIds.length; i++) {
+            _validPrediction(predictionIds[i]);
         }
 
-        _mintBatch(to, options, amounts, data);
+        _mintBatch(to, predictionIds, amounts, "");
     }
 
     function isOpen() external view override returns (bool) {
-        return state == PollState.OPEN;
+        return state == MarketState.OPEN;
     }
 
     function pause() external onlyRole(DEFAULT_ADMIN_ROLE) whenOpen {
-        state = PollState.PAUSED;
+        state = MarketState.PAUSED;
     }
 
     function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) whenPaused {
-        state = PollState.OPEN;
+        state = MarketState.OPEN;
     }
 
-    function closePoll(uint256 winningOption)
+    function closeMarket(uint256 _winningPrediction)
         external
         override
         onlyRole(ESCROW_ROLE)
-        validOption(winningOption)
+        validPrediction(_winningPrediction)
         whenOpen
     {
-        winner = winningOption;
-        state = PollState.CLOSED;
+        winningPrediction = _winningPrediction;
+        state = MarketState.CLOSED;
     }
 
     function _beforeTokenTransfer(
@@ -100,7 +100,7 @@ contract Poll is IPoll, ERC1155, AccessControl, ERC1155Supply {
         return super.supportsInterface(interfaceId);
     }
 
-    function _validOption(uint256 optionId) private view {
-        if (optionId >= optionCount) revert InvalidPollOption(optionId);
+    function _validPrediction(uint256 predictionId) private view {
+        if (predictionId >= optionCount) revert InvalidPredictionId(predictionId);
     }
 }
