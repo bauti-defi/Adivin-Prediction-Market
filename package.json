@@ -11,7 +11,7 @@
     "husky": "^8.0.1"
   },
   "scripts": {
-    "format": "forge fmt",
+    "fmt": "forge fmt",
     "prepare": "husky install",
     "build": "forge build"
   },
