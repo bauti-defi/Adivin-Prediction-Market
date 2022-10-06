@@ -32,8 +32,9 @@ contract Escrow is IEscrow, ERC1155Holder, AccessControl, ReentrancyGuard {
     function openMarket(address market) external override onlyRole(MARKET_OPENER_ROLE) {
         PredictionMarket marketContract = PredictionMarket(market);
 
-        require(marketContract.isOpen(), "Escrow: market must be open");
+        require(!marketContract.isStarted(), "Escrow: market already started");
 
+        marketContract.open();
         markets[marketIdNonce++] = MarketData({market: marketContract, pot: 0});
 
         emit PredictionMarketCreated(marketIdNonce - 1, market);

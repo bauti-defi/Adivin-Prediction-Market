@@ -36,7 +36,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         // set EOA as admin
         _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
         optionCount = _optionCount;
-        state = MarketState.OPEN;
+        state = MarketState.NOT_STARTED;
     }
 
     function mint(address account, uint256 predictionId, uint256 amount)
@@ -60,6 +60,14 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         }
 
         _mintBatch(to, predictionIds, amounts, "");
+    }
+
+    function isStarted() external view returns (bool) {
+        return state != MarketState.NOT_STARTED && state != MarketState.UNDEFINED;
+    }
+
+    function open() external {
+        state = MarketState.OPEN;
     }
 
     function isOpen() external view override returns (bool) {

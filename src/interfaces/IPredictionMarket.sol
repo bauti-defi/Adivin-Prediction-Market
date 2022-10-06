@@ -8,6 +8,7 @@ interface IPredictionMarket {
 
     enum MarketState {
         UNDEFINED,
+        NOT_STARTED,
         OPEN,
         PAUSED,
         CLOSED
