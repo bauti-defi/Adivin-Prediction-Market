@@ -3,7 +3,10 @@ pragma solidity ^0.8.13;
 
 import "@src/PredictionMarket.sol";
 
+/// @notice Escrow contract is a user facing contract. It manages the lifecycle of Prediction Market(s), escrows
+/// the pot of each market and executes the cashout of predictions.
 interface IEscrow {
+    /// @dev Metadata for a particular Prediction Market
     struct MarketData {
         PredictionMarket market;
         uint256 pot;
@@ -20,9 +23,7 @@ interface IEscrow {
 
     function createMarket(address market) external;
 
-    // should only be called by contracts (oracles) that have been approved by the owner
-    // these contracts should be proxies that decode incoming data streams into (marketId, winningPredictionId) tupples
-    // those tupples are the parameters below
-    // ? could be a chainlink oracle or multisig
+    /// @notice Closes a Prediction Market with the given winning prediction.
+    /// @dev Caller is expected to be an authorized multisig or oracle (single source of truth)
     function submitMarketResult(uint256 marketId, uint256 winningPredictionId) external;
 }
