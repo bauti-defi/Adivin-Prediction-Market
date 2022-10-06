@@ -15,4 +15,8 @@ contract TestEscrowLifeCycle is BaseTestEnv {
     function setUp() public override {
         super.setUp();
     }
+
+    function testTrue() public {
+        assertFalse(false);
+    }
 }

@@ -13,7 +13,8 @@
   "scripts": {
     "fmt": "forge fmt",
     "prepare": "husky install",
-    "build": "forge build"
+    "build": "forge build",
+    "test": "forge test -vvv"
   },
   "repository": {
     "type": "git",

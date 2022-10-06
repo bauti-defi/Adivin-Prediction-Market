@@ -25,10 +25,10 @@ abstract contract BaseTestEnv is Test {
         console2.log("Created oracle address");
         oracle = makeAddr("Oracle");
 
-        console2.log("Created payment token reference");
+        console2.log("Created ERC20 payment token reference");
         paymentToken = ERC20(vm.addr(1));
 
-        vm.startPrank(deployer);
+        vm.startPrank(deployer, deployer);
         console2.log("Created Escrow");
         escrow = new Escrow(address(paymentToken));
         vm.label(address(escrow), "Escrow");
