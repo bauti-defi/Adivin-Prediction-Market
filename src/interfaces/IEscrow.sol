@@ -21,7 +21,7 @@ interface IEscrow {
     // Users need to personally cashout
     function cashout(uint256 marketId, uint256 predictionId) external;
 
-    function createMarket(address market) external;
+    function openMarket(address market) external;
 
     /// @notice Closes a Prediction Market with the given winning prediction.
     /// @dev Caller is expected to be an authorized multisig or oracle (single source of truth)

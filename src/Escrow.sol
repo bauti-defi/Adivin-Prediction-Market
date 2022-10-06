@@ -14,7 +14,7 @@ import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 contract Escrow is IEscrow, ERC1155Holder, AccessControl, ReentrancyGuard {
     using SafeERC20 for ERC20;
 
-    bytes32 public constant MARKET_CREATOR_ROL = keccak256("MARKET_CREATOR_ROL");
+    bytes32 public constant MARKET_OPENER_ROLE = keccak256("MARKET_OPENER_ROLE");
     bytes32 public constant MARKET_CLOSER_ROLE = keccak256("MARKET_CLOSER_ROLE");
 
     uint256 public marketIdNonce;
@@ -25,11 +25,11 @@ contract Escrow is IEscrow, ERC1155Holder, AccessControl, ReentrancyGuard {
         // set EOA as admin
         _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
         // set EOA as market creator
-        _setupRole(MARKET_CREATOR_ROL, tx.origin);
+        _setupRole(MARKET_OPENER_ROLE, tx.origin);
         paymentToken = ERC20(token);
     }
 
-    function createMarket(address market) external override onlyRole(MARKET_CREATOR_ROL) {
+    function openMarket(address market) external override onlyRole(MARKET_OPENER_ROLE) {
         PredictionMarket marketContract = PredictionMarket(market);
 
         require(marketContract.isOpen(), "Escrow: market must be open");
