@@ -1,3 +1,7 @@
+# node
+node_modules/
+yarn-error.log
+
 # Compiler files
 cache/
 out/
