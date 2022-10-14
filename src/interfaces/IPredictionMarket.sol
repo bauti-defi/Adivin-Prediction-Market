@@ -6,12 +6,20 @@ pragma solidity ^0.8.17;
 interface IPredictionMarket {
     error InvalidPredictionId(uint256 predictionId);
 
+    /// @dev 
+    /// UNDEFINED: market has not been created yet
+    /// NOT_STARTED: market has been created but not opened yet
+    /// OPEN: market is open for predictions
+    /// PAUSED: market is paused, only for emergencies
+    /// CLOSED: market is closed, no more predictions can be made. Cannot cashout yet.
+    /// FINISHED: market is finished, no more predictions can be made. Predictions can be cashed out.
     enum MarketState {
-        UNDEFINED,
+        UNDEFINED, 
         NOT_STARTED,
         OPEN,
         PAUSED,
-        CLOSED
+        CLOSED,
+        FINISHED
     }
 
     function mint(address account, uint256 predictionId, uint256 amount) external;
