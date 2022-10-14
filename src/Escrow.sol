@@ -35,7 +35,7 @@ contract Escrow is IEscrow, ERC1155Holder, AccessControl, ReentrancyGuard {
         require(!marketContract.isStarted(), "Escrow: market already started");
 
         marketContract.open();
-        markets[marketIdNonce++] = MarketData({market: marketContract, pot: 0});
+        markets[marketIdNonce++] = MarketData({market: marketContract, totalDeposited: 0, totalPaidOut: 0});
 
         emit PredictionMarketCreated(marketIdNonce - 1, market);
     }
@@ -68,8 +68,8 @@ contract Escrow is IEscrow, ERC1155Holder, AccessControl, ReentrancyGuard {
         // Check it is defined
         require(marketData.market.state() != IPredictionMarket.MarketState.UNDEFINED, "Escrow: Market is undefined");
 
-        // update pot
-        marketData.pot += depositAmount;
+        // update totalDeposited
+        marketData.totalDeposited += depositAmount;
 
         // mint option tokens to the msg.sender
         // ! amount is not scaled
@@ -79,7 +79,7 @@ contract Escrow is IEscrow, ERC1155Holder, AccessControl, ReentrancyGuard {
         markets[marketId] = marketData;
 
         // emit event
-        emit PredictionMade(marketId, msg.sender, predictionId, amount, marketData.pot);
+        emit PredictionMade(marketId, msg.sender, predictionId, amount, marketData.totalDeposited);
     }
 
     function cashout(uint256 marketId, uint256 predictionId) external override nonReentrant {

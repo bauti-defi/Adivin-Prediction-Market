@@ -44,8 +44,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         state = MarketState.NOT_STARTED;
     }
 
-    function burn(address account, uint256 id, uint256 amount) 
-        public 
+    function burn(address account, uint256 id, uint256 amount)
+        public
         override
         validPrediction(id)
         whenNotPaused

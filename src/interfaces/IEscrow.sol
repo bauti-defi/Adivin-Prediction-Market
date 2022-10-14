@@ -8,8 +8,9 @@ import "@src/PredictionMarket.sol";
 interface IEscrow {
     /// @dev Metadata for a particular Prediction Market
     struct MarketData {
+        uint256 totalDeposited;
+        uint256 totalPaidOut;
         PredictionMarket market;
-        uint256 pot;
     }
 
     event PredictionMade(uint256 indexed marketId, address buyer, uint256 predictionId, uint256 amount, uint256 pot);
