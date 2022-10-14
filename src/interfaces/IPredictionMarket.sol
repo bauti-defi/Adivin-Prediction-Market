@@ -18,6 +18,8 @@ interface IPredictionMarket {
 
     function mintBatch(address to, uint256[] memory predictionIds, uint256[] memory amounts) external;
 
+    function burn(address account, uint256 id, uint256 amount) external;
+
     function isOpen() external view returns (bool);
 
     function closeMarket(uint256 winningPrediction) external;
