@@ -31,12 +31,27 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         _;
     }
 
+    modifier whenNotPaused() {
+        require(state != MarketState.PAUSED && state != MarketState.UNDEFINED, "PredictionMarket: paused");
+        _;
+    }
+
     constructor(uint256 _optionCount) ERC1155("https://localhost:3000") {
         require(_optionCount > 0, "PredictionMarket: optionCount must be > 0");
         // set EOA as admin
         _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
         optionCount = _optionCount;
         state = MarketState.NOT_STARTED;
+    }
+
+    function burn(address account, uint256 id, uint256 amount) 
+        public 
+        override
+        validPrediction(id)
+        whenNotPaused
+        onlyRole(ESCROW_ROLE)
+    {
+        _burn(account, id, amount);
     }
 
     function mint(address account, uint256 predictionId, uint256 amount)
