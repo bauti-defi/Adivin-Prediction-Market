@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin-contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin-contracts/token/ERC1155/extensions/ERC1155Supply.sol";
@@ -9,89 +9,176 @@ import "@src/interfaces/IPredictionMarket.sol";
 
 contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155Supply {
     bytes32 public constant ESCROW_ROLE = keccak256("ESCROW_ROLE");
+    bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
 
     MarketState public state;
 
-    // from 0 to optionCount - 1
+    /// @dev 0 is invalid. Count starts at 1.
     uint256 public immutable optionCount;
+
+    /// @dev 0 means no winner yet.
     uint256 public winningPrediction;
+    uint256 public immutable expiration;
+
+    /// TODO: Add correct media URI
+    constructor(uint256 _optionCount, uint256 _expiration) ERC1155("https://localhost:3000") {
+        require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
+        require(_expiration > block.timestamp, "PredictionMarket: expiration must be in the future");
+
+        // set EOA as admin
+        _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
+
+        optionCount = _optionCount;
+        expiration = _expiration;
+        state = MarketState.NOT_STARTED;
+    }
+
+    /// ~~~~~~~~~~~~~~~~~~~~~~ MODIFIERS ~~~~~~~~~~~~~~~~~~~~~~
 
     modifier validPrediction(uint256 predictionId) {
         _validPrediction(predictionId);
         _;
     }
 
+    modifier whenNotStarted() {
+        require(this.isNotStarted(), "PredictionMarket: market has already started");
+        _;
+    }
+
     modifier whenOpen() {
-        require(state == MarketState.OPEN, "PredictionMarket: not open");
+        require(this.isOpen(), "PredictionMarket: not open");
         _;
     }
 
     modifier whenPaused() {
-        require(state == MarketState.PAUSED, "PredictionMarket: not paused");
+        require(this.isPaused(), "PredictionMarket: not paused");
         _;
     }
 
-    constructor(uint256 _optionCount) ERC1155("https://localhost:3000") {
-        require(_optionCount > 0, "PredictionMarket: optionCount must be > 0");
-        // set EOA as admin
-        _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
-        optionCount = _optionCount;
-        state = MarketState.NOT_STARTED;
+    modifier whenClosed() {
+        require(this.isClosed(), "PredictionMarket: not closed");
+        _;
+    } 
+
+    modifier whenFinished() {
+        require(this.isFinished(), "PredictionMarket: not finished");
+        _;
     }
 
-    function mint(address account, uint256 predictionId, uint256 amount)
+    /// ~~~~~~~~~~~~~~~~~~~~~~ TOKEN LIFECYCLE ~~~~~~~~~~~~~~~~~~~~~~
+
+    function burn(address _claimer, uint256 _id, uint256 _amount)
         external
         override
+        whenFinished
+        validPrediction(_id)
         onlyRole(ESCROW_ROLE)
-        validPrediction(predictionId)
-        whenOpen
     {
-        _mint(account, predictionId, amount, "");
+        _burn(_claimer, _id, _amount);
     }
 
-    function mintBatch(address to, uint256[] memory predictionIds, uint256[] memory amounts)
+    function mint(address _better, uint256 _predictionId, uint256 _amount)
         external
         override
-        onlyRole(ESCROW_ROLE)
         whenOpen
+        validPrediction(_predictionId)
+        onlyRole(ESCROW_ROLE)
     {
-        for (uint256 i = 0; i < predictionIds.length; i++) {
-            _validPrediction(predictionIds[i]);
+        _mint(_better, _predictionId, _amount, "");
+    }
+
+    function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts)
+        external
+        override
+        whenOpen
+        onlyRole(ESCROW_ROLE)
+    {
+        for (uint256 i = 0; i < _predictionIds.length; i++) {
+            _validPrediction(_predictionIds[i]);
         }
 
-        _mintBatch(to, predictionIds, amounts, "");
+        _mintBatch(_better, _predictionIds, _amounts, "");
     }
 
-    function isStarted() external view returns (bool) {
-        return state != MarketState.NOT_STARTED && state != MarketState.UNDEFINED;
-    }
+    /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET STATE SETTERS ~~~~~~~~~~~~~~~~~~~~~~
 
-    function open() external {
+    function open() 
+        external 
+        whenNotStarted
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         state = MarketState.OPEN;
+    }
+
+    function unpause() 
+        external
+        whenPaused 
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+         
+    {
+        state = MarketState.OPEN;
+    }    
+    
+    function pause() 
+        external 
+        whenOpen
+        onlyRole(DEFAULT_ADMIN_ROLE) 
+    {
+        state = MarketState.PAUSED;
+    }
+
+    /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET STATE GETTERS ~~~~~~~~~~~~~~~~~~~~~~
+
+    function isUndefined() external view returns (bool) {
+        return state == MarketState.UNDEFINED;
+    }
+
+    function isNotStarted() external view override returns (bool) {
+        return state == MarketState.NOT_STARTED;
+    }
+
+    function isClosed() external view override returns (bool) {
+        return state == MarketState.CLOSED || expiration >= block.timestamp;
     }
 
     function isOpen() external view override returns (bool) {
         return state == MarketState.OPEN;
     }
 
-    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) whenOpen {
-        state = MarketState.PAUSED;
+    function isFinished() external view override returns (bool) {
+        return state == MarketState.FINISHED && winningPrediction != 0;
     }
 
-    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) whenPaused {
-        state = MarketState.OPEN;
+    function isPaused() external view override returns (bool) {
+        return state == MarketState.PAUSED;
     }
 
-    function closeMarket(uint256 _winningPrediction)
+    /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET LIFECYCLE ~~~~~~~~~~~~~~~~~~~~~~
+
+    function submitResult(uint256 _winningPrediction)
         external
         override
-        onlyRole(ESCROW_ROLE)
+        whenClosed
+        onlyRole(ORACLE_ROLE)
         validPrediction(_winningPrediction)
-        whenOpen
     {
+        require(winningPrediction == 0, "PredictionMarket: winner already submitted");
+
         winningPrediction = _winningPrediction;
+        state = MarketState.FINISHED;
+    }
+
+    /// ! Can force close regardless of expiration
+    function closeBetting() 
+        external
+        override 
+        whenOpen
+        onlyRole(ORACLE_ROLE)  
+    {
         state = MarketState.CLOSED;
     }
+
+    /// ~~~~~~~~~~~~~~~~~~~~~~ NATIVE ERC1155 METHODS ~~~~~~~~~~~~~~~~~~~~~~
 
     function _beforeTokenTransfer(
         address operator,
@@ -108,7 +195,18 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         return super.supportsInterface(interfaceId);
     }
 
+    /// ~~~~~~~~~~~~~~~~~~~~~~ HELPERS ~~~~~~~~~~~~~~~~~~~~~~
+
     function _validPrediction(uint256 predictionId) private view {
-        if (predictionId >= optionCount) revert InvalidPredictionId(predictionId);
+        if (predictionId > optionCount || predictionId == 0) revert InvalidPredictionId(predictionId);
+    }
+
+    function isWinner(uint256 _predictionId)
+        external 
+        view 
+        validPrediction(_predictionId)
+        returns (bool) 
+    {
+        return winningPrediction == _predictionId;
     }
 }

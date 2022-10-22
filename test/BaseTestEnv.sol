@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
@@ -29,19 +29,19 @@ abstract contract BaseTestEnv is Test {
         paymentToken = ERC20(vm.addr(1));
 
         vm.startPrank(deployer, deployer);
-        console2.log("Created Escrow");
-        escrow = new Escrow(address(paymentToken));
-        vm.label(address(escrow), "Escrow");
+        // console2.log("Created Escrow");
+        // escrow = new Escrow(address(paymentToken));
+        // vm.label(address(escrow), "Escrow");
 
-        console2.log("Grant oracle MARKET_CLOSER_ROLE");
-        escrow.grantRole(escrow.MARKET_CLOSER_ROLE(), oracle);
+        // console2.log("Grant oracle MARKET_CLOSER_ROLE");
+        // escrow.grantRole(escrow.MARKET_CLOSER_ROLE(), oracle);
 
-        console2.log("Created Prediction Market ERC1155");
-        predictionMarket = new PredictionMarket(predictionCount);
-        vm.label(address(predictionMarket), "Prediction Market");
+        // console2.log("Created Prediction Market ERC1155");
+        // predictionMarket = new PredictionMarket(predictionCount);
+        // vm.label(address(predictionMarket), "Prediction Market");
 
-        console2.log("Opened prediction market");
-        escrow.openMarket(address(predictionMarket));
+        // console2.log("Opened prediction market");
+        // escrow.openMarket(address(predictionMarket));
         vm.stopPrank();
     }
 }
