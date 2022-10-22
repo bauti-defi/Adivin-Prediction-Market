@@ -58,7 +58,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     modifier whenClosed() {
         require(this.isClosed(), "PredictionMarket: not closed");
         _;
-    } 
+    }
 
     modifier whenFinished() {
         require(this.isFinished(), "PredictionMarket: not finished");
@@ -102,28 +102,15 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET STATE SETTERS ~~~~~~~~~~~~~~~~~~~~~~
 
-    function open() 
-        external 
-        whenNotStarted
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function open() external whenNotStarted onlyRole(DEFAULT_ADMIN_ROLE) {
         state = MarketState.OPEN;
     }
 
-    function unpause() 
-        external
-        whenPaused 
-        onlyRole(DEFAULT_ADMIN_ROLE) 
-         
-    {
+    function unpause() external whenPaused onlyRole(DEFAULT_ADMIN_ROLE) {
         state = MarketState.OPEN;
-    }    
-    
-    function pause() 
-        external 
-        whenOpen
-        onlyRole(DEFAULT_ADMIN_ROLE) 
-    {
+    }
+
+    function pause() external whenOpen onlyRole(DEFAULT_ADMIN_ROLE) {
         state = MarketState.PAUSED;
     }
 
@@ -169,12 +156,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     /// ! Can force close regardless of expiration
-    function closeBetting() 
-        external
-        override 
-        whenOpen
-        onlyRole(ORACLE_ROLE)  
-    {
+    function closeBetting() external override whenOpen onlyRole(ORACLE_ROLE) {
         state = MarketState.CLOSED;
     }
 
@@ -201,12 +183,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         if (predictionId > optionCount || predictionId == 0) revert InvalidPredictionId(predictionId);
     }
 
-    function isWinner(uint256 _predictionId)
-        external 
-        view 
-        validPrediction(_predictionId)
-        returns (bool) 
-    {
+    function isWinner(uint256 _predictionId) external view validPrediction(_predictionId) returns (bool) {
         return winningPrediction == _predictionId;
     }
 }

@@ -21,5 +21,4 @@ interface IEscrow {
 
     // Users need to personally cashout
     function cashout(uint256 _predictionId) external;
-
 }

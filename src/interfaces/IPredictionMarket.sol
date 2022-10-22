@@ -30,7 +30,7 @@ interface IPredictionMarket {
 
     function isOpen() external view returns (bool);
 
-    function isFinished() external view returns (bool);    
+    function isFinished() external view returns (bool);
 
     function isClosed() external view returns (bool);
 
@@ -51,7 +51,7 @@ interface IPredictionMarket {
     function submitResult(uint256 _winningPrediction) external;
 
     /// @notice Manually closes a Prediction Market. No more predictions can be made.
-    /// Can only be called my Admin role. 
+    /// Can only be called my Admin role.
     function closeBetting() external;
 
     function isWinner(uint256 _predictionId) external view returns (bool);
