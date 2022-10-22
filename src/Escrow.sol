@@ -27,7 +27,6 @@ contract Escrow is IEscrow, ERC1155Holder, ReentrancyGuard {
         require(market.isNotStarted(), "Escrow: market has already started");
 
         marketData = MarketData({market: market, totalDeposited: 0, totalPaidOut: 0});
-        market.open();
     }
 
     function buy(uint256 _predictionId, uint256 _amount) external override nonReentrant {
