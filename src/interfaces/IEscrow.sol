@@ -13,18 +13,13 @@ interface IEscrow {
         PredictionMarket market;
     }
 
-    event PredictionMade(uint256 indexed marketId, address buyer, uint256 predictionId, uint256 amount, uint256 pot);
-    event PredictionMarketClosed(uint256 indexed marketId, uint256 winningPrediction, address marketAddress);
-    event PredictionMarketCreated(uint256 indexed marketId, address marketAddress);
+    event PredictionMade(address indexed buyer, uint256 predictionId, uint256 amount, uint256 pot);
+    event PredictionPaidOut(address indexed claimer, uint256 amount);
+    event PredictionMarketBettingStarted(address indexed marketAddress);
 
-    function buy(uint256 marketId, uint256 predictionId, uint256 amount) external;
+    function buy(uint256 _predictionId, uint256 _amount) external;
 
     // Users need to personally cashout
-    function cashout(uint256 marketId, uint256 predictionId) external;
+    function cashout(uint256 _predictionId) external;
 
-    function openMarket(address market) external;
-
-    /// @notice Closes a Prediction Market with the given winning prediction.
-    /// @dev Caller is expected to be an authorized multisig or oracle (single source of truth)
-    function submitMarketResult(uint256 marketId, uint256 winningPredictionId) external;
 }

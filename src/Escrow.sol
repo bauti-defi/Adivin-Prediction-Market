@@ -4,95 +4,100 @@ pragma solidity ^0.8.17;
 import "./interfaces/IEscrow.sol";
 import "@src/PredictionMarket.sol";
 import "@src/interfaces/IPredictionMarket.sol";
-import "@openzeppelin-contracts/access/AccessControl.sol";
 import "@openzeppelin-contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin-contracts/token/ERC1155/utils/ERC1155Receiver.sol";
 import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 
-contract Escrow is IEscrow, ERC1155Holder, AccessControl, ReentrancyGuard {
+contract Escrow is IEscrow, ERC1155Holder, ReentrancyGuard {
     using SafeERC20 for ERC20;
 
-    bytes32 public constant MARKET_OPENER_ROLE = keccak256("MARKET_OPENER_ROLE");
-    bytes32 public constant MARKET_CLOSER_ROLE = keccak256("MARKET_CLOSER_ROLE");
-
-    uint256 public marketIdNonce;
+    PredictionMarket public immutable market;
+    MarketData public marketData;
     ERC20 public immutable paymentToken;
-    mapping(uint256 => MarketData) markets;
 
-    constructor(address token) {
-        // set EOA as admin
-        _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
-        // set EOA as market creator
-        _setupRole(MARKET_OPENER_ROLE, tx.origin);
-        paymentToken = ERC20(token);
+    constructor(address _token, address _market) {
+        paymentToken = ERC20(_token);
+
+        require(_market != address(0), "Escrow: market address is 0");
+
+        market = PredictionMarket(_market);
+
+        require(market.isNotStarted(), "Escrow: market has already started");
+
+        marketData = MarketData({market: market, totalDeposited: 0, totalPaidOut: 0});
+        market.open();
     }
 
-    function openMarket(address market) external override onlyRole(MARKET_OPENER_ROLE) {
-        PredictionMarket marketContract = PredictionMarket(market);
-
-        require(!marketContract.isStarted(), "Escrow: market already started");
-
-        marketContract.open();
-        markets[marketIdNonce++] = MarketData({market: marketContract, totalDeposited: 0, totalPaidOut: 0});
-
-        emit PredictionMarketCreated(marketIdNonce - 1, market);
-    }
-
-    function submitMarketResult(uint256 marketId, uint256 winningPrediction)
-        external
-        override
-        onlyRole(MARKET_CLOSER_ROLE)
-    {
-        PredictionMarket marketContract = markets[marketId].market;
-
-        require(marketContract.state() != IPredictionMarket.MarketState.UNDEFINED, "Escrow: Market is undefined");
-
-        // close market and register the winning option
-        marketContract.closeMarket(winningPrediction);
-
-        emit PredictionMarketClosed(marketId, winningPrediction, address(marketContract));
-    }
-
-    function buy(uint256 marketId, uint256 predictionId, uint256 amount) external override nonReentrant {
+    function buy(uint256 _predictionId, uint256 _amount) external override nonReentrant {
         // scale up according to decimals
-        uint256 depositAmount = amount * paymentToken.decimals();
+        uint256 depositAmount = _amount * paymentToken.decimals();
+
+        // check if we have enough allowance
+        require(paymentToken.allowance(msg.sender, address(this)) >= depositAmount, "Escrow: insufficient allowance");
 
         // transfer their stables into the escrow
         paymentToken.safeTransferFrom(msg.sender, address(this), depositAmount);
 
-        // Fetch the market from storage
-        MarketData memory marketData = markets[marketId];
-
-        // Check it is defined
-        require(marketData.market.state() != IPredictionMarket.MarketState.UNDEFINED, "Escrow: Market is undefined");
+        // mint option tokens to the msg.sender
+        // ! amount is not scaled
+        market.mint(msg.sender, _predictionId, _amount);
 
         // update totalDeposited
         marketData.totalDeposited += depositAmount;
 
-        // mint option tokens to the msg.sender
-        // ! amount is not scaled
-        marketData.market.mint(msg.sender, predictionId, amount);
-
-        // Upsert market into storage
-        markets[marketId] = marketData;
-
         // emit event
-        emit PredictionMade(marketId, msg.sender, predictionId, amount, marketData.totalDeposited);
+        emit PredictionMade(msg.sender, _predictionId, _amount, marketData.totalDeposited);
     }
 
-    function cashout(uint256 marketId, uint256 predictionId) external override nonReentrant {
-        // update token balance for escrow
-        // receive option tokens from the msg.sender
-        // send stables to the msg.sender
+    function cashout(uint256 _predictionId) external override nonReentrant {
+        // Check it is finished
+        require(market.isFinished(), "Escrow: Market is not finished");
+
+        // Check if prediction is winning
+        bool isAWinner = market.isWinner(_predictionId);
+
+        // Only winners can cashout, save noobs the gas fee
+        require(isAWinner, "Escrow: Prediction is not a winner");
+
+        // Get caller token balance
+        uint256 _tokenBalance = market.balanceOf(msg.sender, _predictionId);
+
+        // Check caller has tokens
+        require(_tokenBalance > 0, "Escrow: Caller has no tokens");
+
+        // Get the circulating supply of winning tokens
+        // ! notice burned tokens are not accounted for
+        uint256 _ciruclatingWinningTokens = market.totalSupply(_predictionId);
+
+        // burn ALL their tokens
+        // ! notice burn() already checks if caller has given escrow allowance
+        market.burn(msg.sender, _predictionId, _tokenBalance);
+
+        // check the tokens were burned
+        require(market.balanceOf(msg.sender, _predictionId) == 0, "Escrow: Tokens were not burned");
+
+        // calculate the amount to pay out, scale the value
+        // the winner is paid a proportionate amount of the totalDeposited
+        // winnerBalance/circulatingWinningSupply * totalDeposited
+        uint256 _payoutAmount = _tokenBalance * paymentToken.decimals() * marketData.totalDeposited / _ciruclatingWinningTokens;
+
+        // update state for totalPaidOut and totalDeposited
+        marketData.totalPaidOut += _payoutAmount;
+        marketData.totalDeposited -= _payoutAmount;
+
+        // transfer the tokens to the caller
+        paymentToken.safeTransfer(msg.sender, _payoutAmount);
+
         // emit
+        emit PredictionPaidOut(msg.sender, _payoutAmount);
     }
 
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override (ERC1155Receiver, AccessControl)
+        override (ERC1155Receiver)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
