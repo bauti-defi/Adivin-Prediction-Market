@@ -4,13 +4,11 @@ pragma solidity ^0.8.17;
 import "./interfaces/IEscrow.sol";
 import "@src/PredictionMarket.sol";
 import "@src/interfaces/IPredictionMarket.sol";
-import "@openzeppelin-contracts/token/ERC1155/utils/ERC1155Holder.sol";
-import "@openzeppelin-contracts/token/ERC1155/utils/ERC1155Receiver.sol";
 import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 
-contract Escrow is IEscrow, ERC1155Holder, ReentrancyGuard {
+contract Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for ERC20;
 
     PredictionMarket public immutable market;
@@ -94,7 +92,4 @@ contract Escrow is IEscrow, ERC1155Holder, ReentrancyGuard {
         emit PredictionPaidOut(msg.sender, _payoutAmount);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override (ERC1155Receiver) returns (bool) {
-        return super.supportsInterface(interfaceId);
-    }
 }

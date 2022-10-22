@@ -19,7 +19,12 @@ contract Factory {
     }
 
     /// @notice Creates a new prediction market that is NOT OPEN.
-    function createMarket(uint256 _predictionCount, uint256 _marketExpiration, address _paymentToken, address _resultOracle) public onlyAdmin {
+    function createMarket(
+        uint256 _predictionCount,
+        uint256 _marketExpiration,
+        address _paymentToken,
+        address _resultOracle
+    ) public onlyAdmin {
         // TODO: Validate _resultOracle is a valid oracle
 
         // create market
