@@ -81,7 +81,8 @@ contract Escrow is IEscrow, ERC1155Holder, ReentrancyGuard {
         // calculate the amount to pay out, scale the value
         // the winner is paid a proportionate amount of the totalDeposited
         // winnerBalance/circulatingWinningSupply * totalDeposited
-        uint256 _payoutAmount = _tokenBalance * paymentToken.decimals() * marketData.totalDeposited / _ciruclatingWinningTokens;
+        uint256 _payoutAmount =
+            _tokenBalance * paymentToken.decimals() * marketData.totalDeposited / _ciruclatingWinningTokens;
 
         // update state for totalPaidOut and totalDeposited
         marketData.totalPaidOut += _payoutAmount;
@@ -94,12 +95,7 @@ contract Escrow is IEscrow, ERC1155Holder, ReentrancyGuard {
         emit PredictionPaidOut(msg.sender, _payoutAmount);
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override (ERC1155Receiver)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view override (ERC1155Receiver) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

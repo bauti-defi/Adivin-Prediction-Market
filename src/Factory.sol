@@ -2,15 +2,14 @@
 pragma solidity ^0.8.17;
 
 contract Factory {
-
     address immutable admin;
 
-    modifier onlyAdmin(){
+    modifier onlyAdmin() {
         require(msg.sender == admin, "Factory: only admin");
         _;
     }
 
-    constructor(){
+    constructor() {
         admin = msg.sender;
     }
 
@@ -19,5 +18,4 @@ contract Factory {
         // create escrow
         // bind them together
     }
-
 }
