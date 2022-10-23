@@ -91,5 +91,4 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // emit
         emit PredictionPaidOut(msg.sender, _payoutAmount);
     }
-
 }

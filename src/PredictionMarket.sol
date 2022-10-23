@@ -8,6 +8,7 @@ import "@openzeppelin-contracts/access/AccessControl.sol";
 import "@src/interfaces/IPredictionMarket.sol";
 
 contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155Supply {
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant ESCROW_ROLE = keccak256("ESCROW_ROLE");
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
 
@@ -25,8 +26,14 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
         require(_expiration > block.timestamp, "PredictionMarket: expiration must be in the future");
 
-        // set EOA as admin
-        _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
+        // set admin role to EOA
+        _setupRole(ADMIN_ROLE, tx.origin);
+
+        // Set admin for escrow role
+        _setRoleAdmin(ESCROW_ROLE, ADMIN_ROLE);
+
+        // set Admin for oracle role
+        _setRoleAdmin(ORACLE_ROLE, ADMIN_ROLE);
 
         optionCount = _optionCount;
         expiration = _expiration;
