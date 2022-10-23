@@ -7,5 +7,6 @@ interface IFactory {
     event PredictionMarketCreated(address indexed market, address indexed escrow, address indexed creator);
 
     /// @notice Creates a new prediction market that is NOT OPEN.
+    /// @notice Only admin role is set on the market. Oracle and Escrow roles need to be set manually by the admin.
     function createMarket(uint256 _predictionCount, uint256 _marketExpiration, address _paymentToken) external;
 }

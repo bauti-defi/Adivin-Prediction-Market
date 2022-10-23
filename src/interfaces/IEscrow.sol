@@ -16,7 +16,6 @@ interface IEscrow {
 
     event PredictionMade(address indexed buyer, uint256 predictionId, uint256 amount, uint256 pot);
     event PredictionPaidOut(address indexed claimer, uint256 amount);
-    event PredictionMarketBettingStarted(address indexed marketAddress);
 
     function buy(uint256 _predictionId, uint256 _amount) external;
 
