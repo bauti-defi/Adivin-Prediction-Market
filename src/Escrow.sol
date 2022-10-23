@@ -25,7 +25,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
         require(market.isNotStarted(), "Escrow: market has already started");
 
-        marketData = MarketData({market: market, totalDeposited: 0, totalPaidOut: 0});
+        marketData = MarketData({totalDeposited: 0, totalPaidOut: 0});
     }
 
     function buy(uint256 _predictionId, uint256 _amount) external override nonReentrant {
@@ -91,5 +91,13 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
         // emit
         emit PredictionPaidOut(msg.sender, _payoutAmount);
+    }
+
+    function totalPaidOut() external view override returns (uint256) {
+        return marketData.totalPaidOut;
+    }
+
+    function totalDeposited() external view override returns (uint256) {
+        return marketData.totalDeposited;
     }
 }

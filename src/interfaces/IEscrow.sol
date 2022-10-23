@@ -11,11 +11,14 @@ interface IEscrow {
     struct MarketData {
         uint256 totalDeposited;
         uint256 totalPaidOut;
-        PredictionMarket market;
     }
 
     event PredictionMade(address indexed buyer, uint256 predictionId, uint256 amount, uint256 pot);
     event PredictionPaidOut(address indexed claimer, uint256 amount);
+
+    function totalDeposited() external view returns (uint256);
+
+    function totalPaidOut() external view returns (uint256);
 
     /// @dev Buy into the prediction market. The payment tokens are escrowed in exchange for
     /// prediction tokens.
