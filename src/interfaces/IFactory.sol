@@ -3,6 +3,8 @@ pragma solidity ^0.8.17;
 
 /// @author bauti.eth
 interface IFactory {
+    error NotAdmin();
+
     /// @notice Emitted when the factory creates a new Escrow-PredictionMarket pair.
     event PredictionMarketCreated(address indexed market, address indexed escrow, address indexed creator);
 

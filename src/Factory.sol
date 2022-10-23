@@ -10,7 +10,7 @@ contract Factory is IFactory {
     address immutable admin;
 
     modifier onlyAdmin() {
-        require(msg.sender == admin, "Factory: only admin");
+        if (msg.sender != admin) revert NotAdmin();
         _;
     }
 

@@ -11,14 +11,14 @@ import "@src/Factory.sol";
 abstract contract BaseTestEnv is Test {
     uint256 public constant predictionCount = 3;
 
-    address public deployer;
+    address public admin;
     address public oracle;
     ERC20 public paymentToken;
     Factory public factory;
 
     function setUp() public virtual {
         console2.log("Created deployer address");
-        deployer = makeAddr("Deployer");
+        admin = makeAddr("Admin");
 
         console2.log("Created oracle address");
         oracle = makeAddr("Oracle");
@@ -26,7 +26,7 @@ abstract contract BaseTestEnv is Test {
         console2.log("Created ERC20 payment token reference");
         paymentToken = ERC20(vm.addr(1));
 
-        vm.prank(deployer, deployer);
+        vm.prank(admin, admin);
         console2.log("Created factory");
         factory = new Factory();
     }
