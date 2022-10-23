@@ -3,8 +3,9 @@ pragma solidity ^0.8.17;
 
 import "@src/PredictionMarket.sol";
 
-/// @notice Escrow contract is a user facing contract. It manages the lifecycle of Prediction Market(s), escrows
-/// the pot of each market and executes the cashout of predictions.
+/// @author bauti.eth
+/// @notice Escrow contract is a user facing contract. It manages the lifecycle the Prediction Market, escrows
+/// the pot and executes the cashout of winning bets.
 interface IEscrow {
     /// @dev Metadata for a particular Prediction Market
     struct MarketData {

@@ -7,6 +7,7 @@ import "@openzeppelin-contracts/access/Ownable.sol";
 import "@openzeppelin-contracts/access/AccessControl.sol";
 import "@src/interfaces/IPredictionMarket.sol";
 
+/// @author bauti.eth
 contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155Supply {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant ESCROW_ROLE = keccak256("ESCROW_ROLE");
@@ -160,6 +161,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
         winningPrediction = _winningPrediction;
         state = MarketState.FINISHED;
+
+        emit ResultSubmitted(_winningPrediction, block.timestamp);
     }
 
     /// ! Can force close regardless of expiration

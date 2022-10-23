@@ -6,6 +6,9 @@ pragma solidity ^0.8.17;
 interface IPredictionMarket {
     error InvalidPredictionId(uint256 predictionId);
 
+    /// @notice Emitted when a prediction result is submitted by oracle
+    event ResultSubmitted(uint256 indexed predictionId, uint256 timestamp);
+
     /// @dev
     /// UNDEFINED: market has not been created yet
     /// NOT_STARTED: market has been created but not opened yet

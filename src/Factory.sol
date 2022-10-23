@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "./PredictionMarket.sol";
 import "./Escrow.sol";
 
+/// @author bauti.eth
 contract Factory {
     event PredictionMarketCreated(address indexed market, address indexed escrow, address indexed creator);
 

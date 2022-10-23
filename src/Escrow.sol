@@ -8,6 +8,7 @@ import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 
+/// @author bauti.eth
 contract Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for ERC20;
 
