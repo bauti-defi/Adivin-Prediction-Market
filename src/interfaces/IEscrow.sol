@@ -17,8 +17,12 @@ interface IEscrow {
     event PredictionMade(address indexed buyer, uint256 predictionId, uint256 amount, uint256 pot);
     event PredictionPaidOut(address indexed claimer, uint256 amount);
 
+    /// @dev Buy into the prediction market. The payment tokens are escrowed in exchange for
+    /// prediction tokens.
     function buy(uint256 _predictionId, uint256 _amount) external;
 
-    // Users need to personally cashout
+    /// @dev Claim your winnings. The winning prediction tokens are burned and the payment tokens are
+    /// transferred to the claimer.
+    /// @notice Reverts if the prediction is not winning.
     function cashout(uint256 _predictionId) external;
 }
