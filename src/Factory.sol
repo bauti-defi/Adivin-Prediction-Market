@@ -21,6 +21,7 @@ contract Factory is IFactory {
     function createMarket(uint256 _predictionCount, uint256 _marketExpiration, address _paymentToken)
         public
         onlyAdmin
+        returns (address, address)
     {
         // create market
         PredictionMarket market = new PredictionMarket(_predictionCount, _marketExpiration);
@@ -30,5 +31,7 @@ contract Factory is IFactory {
 
         // emit event
         emit PredictionMarketCreated(address(market), address(escrow), msg.sender);
+
+        return (address(market), address(escrow));
     }
 }
