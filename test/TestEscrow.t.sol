@@ -13,7 +13,7 @@ import "@src/Escrow.sol";
 import "@test/utils/E20.sol";
 import "@test/utils/Invariants.sol";
 
-contract TestFullMarketCycle is BaseMarketTest {
+contract TestEscrow is BaseMarketTest {
     event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
 
     function setUp() public override {
@@ -54,6 +54,23 @@ contract TestFullMarketCycle is BaseMarketTest {
 
         assertEq(paymentToken.balanceOf(address(escrow)), amountToPay);
         assertEq(market.balanceOf(user, 1), amountToBuy);
+    }
+
+    function testCantBuyInvalidPredictionOption(uint8 predictionId) public {
+        vm.assume(predictionId > market.optionCount() || predictionId == 0);
+
+        vm.prank(admin, admin);
+        market.open();
+
+        uint256 amountToBuy = 100;
+        uint256 amountToPay = dealPaymentToken(user, amountToBuy);
+
+        vm.startPrank(user, user);
+        paymentToken.approve(address(escrow), amountToPay);
+
+        vm.expectRevert(abi.encodeWithSelector(IPredictionMarket.InvalidPredictionId.selector, predictionId));
+        escrow.buy(predictionId, amountToBuy);
+        vm.stopPrank();
     }
 
     function testCashout() public checkInvariants {
@@ -134,19 +151,5 @@ contract TestFullMarketCycle is BaseMarketTest {
         vm.expectRevert(abi.encodeWithSelector(IEscrow.InsufficientPredictionTokenBalance.selector, 1));
         escrow.cashout(1);
         vm.stopPrank();
-    }
-
-    function testOnlyOracleCanSubmitResult(address attacker) public {
-        vm.assume(attacker != oracle);
-
-        vm.prank(admin, admin);
-        market.open();
-
-        // skip forward so market expires
-        skip(DURATION * 2);
-
-        vm.startPrank(attacker, attacker);
-        vm.expectRevert();
-        market.submitResult(1);
     }
 }

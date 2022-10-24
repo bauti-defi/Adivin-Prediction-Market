@@ -13,3 +13,6 @@ out/
 
 # Dotenv file
 .env
+
+# Test coverage
+lcov.info
