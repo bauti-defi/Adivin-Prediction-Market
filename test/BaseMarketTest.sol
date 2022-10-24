@@ -27,6 +27,24 @@ abstract contract BaseMarketTest is BaseTestEnv {
         if (!market.isFinished()) assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
     }
 
+    modifier pauseMarket() {
+        vm.prank(admin, admin);
+        market.pause();
+        _;
+    }
+
+    modifier unpauseMarket() {
+        vm.prank(admin, admin);
+        market.unpause();
+        _;
+    }
+
+    modifier openMarket() {
+        vm.prank(admin, admin);
+        market.open();
+        _;
+    }
+
     function dealPaymentToken(address _user, uint256 _amount) internal returns (uint256) {
         uint256 scaledAmount = _amount * 10 ** paymentToken.decimals();
         paymentToken.mint(_user, scaledAmount);
