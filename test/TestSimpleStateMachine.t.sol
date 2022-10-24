@@ -15,15 +15,88 @@ contract TestSimpleStateMachine is BaseMarketTest {
         market.open();
     }
 
-    function isEven(uint8 n) internal pure returns (bool) {
-        return n % 2 == 0;
+    function testMultiBuy(uint8 buyerCount) public checkInvariants {
+        uint256 amountToBuy = 100;
+
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+            uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
+
+            vm.startPrank(buyer, buyer);
+            paymentToken.approve(address(escrow), amountToPay);
+
+            escrow.buy(1, amountToBuy);
+            vm.stopPrank();
+            assertEq(market.balanceOf(buyer, 1), amountToBuy);
+            assertEq(paymentToken.balanceOf(address(escrow)), amountToPay * (i - 99));
+        }
     }
 
-    function testTrue(uint8[1000] memory steps) public {
-        for (uint256 i = 0; i < steps.length; i++) {
-            if (isEven(steps[i])) console2.logUint(uint256(steps[i]));
+    function testSimpleMultiCashout(uint8 buyerCount) public checkInvariants {
+        uint256 amountToBuy = 100;
 
-            assertTrue(true);
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+            uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
+
+            vm.startPrank(buyer, buyer);
+            paymentToken.approve(address(escrow), amountToPay);
+
+            escrow.buy(1, amountToBuy);
+            vm.stopPrank();
+        }
+
+        // skip forward so market expires
+        skip(DURATION * 2);
+
+        vm.prank(oracle, oracle);
+        market.submitResult(1);
+
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+
+            vm.startPrank(buyer, buyer);
+            escrow.cashout(1);
+            vm.stopPrank();
+        }
+
+        assertEq(paymentToken.balanceOf(address(escrow)), 0);
+        assertEq(market.totalSupply(1), 0);
+    }
+
+    function testComplexMultiCashout(uint8 buyerCount) public checkInvariants {
+        uint256 amountToBuy = 100;
+
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+            uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
+
+            vm.startPrank(buyer, buyer);
+            paymentToken.approve(address(escrow), amountToPay);
+
+            // if even, buy token 1, else buy token 2
+            if (i % 2 == 0) {
+                escrow.buy(1, amountToBuy);
+            } else {
+                escrow.buy(2, amountToBuy);
+            }
+            vm.stopPrank();
+        }
+
+        // skip forward so market expires
+        skip(DURATION * 2);
+
+        vm.prank(oracle, oracle);
+        market.submitResult(1);
+
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+
+            vm.startPrank(buyer, buyer);
+            if (i % 2 == 0) {
+                escrow.cashout(1);
+            }
+            vm.stopPrank();
         }
     }
 }
