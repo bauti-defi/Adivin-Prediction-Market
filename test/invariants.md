@@ -8,3 +8,5 @@ Sum(totalDeposited - totalPaidOut) = paymentToken.balanceOf(escrow)
 
 > This assumes no one has "maliciously" sent funds to the escrow wallet. This is a reasonable assumption because 
 the funds are un-redeemable.
+
+### 3 

@@ -64,7 +64,10 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     modifier whenClosed() {
-        require(this.isClosed(), "PredictionMarket: not closed");
+        if (expiration > block.timestamp) revert MarketNotClosed();
+
+        // switch flag if necesarry
+        if (state != MarketState.CLOSED) state = MarketState.CLOSED;
         _;
     }
 
@@ -163,11 +166,6 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         state = MarketState.FINISHED;
 
         emit ResultSubmitted(_winningPrediction, block.timestamp);
-    }
-
-    /// ! Can force close regardless of expiration
-    function closeBetting() external override whenOpen onlyRole(ORACLE_ROLE) {
-        state = MarketState.CLOSED;
     }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ NATIVE ERC1155 METHODS ~~~~~~~~~~~~~~~~~~~~~~
