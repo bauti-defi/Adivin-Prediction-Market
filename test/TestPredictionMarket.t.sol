@@ -11,6 +11,40 @@ contract TestPredictionMarket is BaseMarketTest {
         super.setUp();
     }
 
+    function testOnlyAdminCanSetOracle(address attacker) public {
+        vm.assume(attacker != admin);
+
+        vm.prank(attacker, attacker);
+        vm.expectRevert();
+        market.setOracle(attacker);
+    }
+
+    function testAdminCanSetOracle() public {
+        address anOracle = vm.addr(1000);
+
+        vm.prank(admin, admin);
+        market.setOracle(anOracle);
+
+        assertEq(market.hasRole(market.ORACLE_ROLE(), anOracle), true);
+    }
+
+    function testOnlyAdminCanSetEscrow(address attacker) public {
+        vm.assume(attacker != admin);
+
+        vm.prank(attacker, attacker);
+        vm.expectRevert();
+        market.setEscrow(attacker);
+    }
+
+    function testAdminSetEscrow() public {
+        address anEscrow = vm.addr(1000);
+
+        vm.prank(admin, admin);
+        market.setEscrow(anEscrow);
+
+        assertEq(market.hasRole(market.ESCROW_ROLE(), anEscrow), true);
+    }
+
     function testOnlyOracleCanSubmitResult(address attacker) public {
         vm.assume(attacker != oracle);
 
