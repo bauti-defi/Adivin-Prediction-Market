@@ -11,11 +11,42 @@ contract TestPredictionMarket is BaseMarketTest {
         super.setUp();
     }
 
-    function testOnlyOracleCanSubmitResult(address attacker) public {
-        vm.assume(attacker != oracle);
+    function testOnlyAdminCanSetOracle(address attacker) public {
+        vm.assume(attacker != admin);
+
+        vm.prank(attacker, attacker);
+        vm.expectRevert();
+        market.setOracle(attacker);
+    }
+
+    function testAdminCanSetOracle() public {
+        address anOracle = vm.addr(1000);
 
         vm.prank(admin, admin);
-        market.open();
+        market.setOracle(anOracle);
+
+        assertEq(market.hasRole(market.ORACLE_ROLE(), anOracle), true);
+    }
+
+    function testOnlyAdminCanSetEscrow(address attacker) public {
+        vm.assume(attacker != admin);
+
+        vm.prank(attacker, attacker);
+        vm.expectRevert();
+        market.setEscrow(attacker);
+    }
+
+    function testAdminSetEscrow() public {
+        address anEscrow = vm.addr(1000);
+
+        vm.prank(admin, admin);
+        market.setEscrow(anEscrow);
+
+        assertEq(market.hasRole(market.ESCROW_ROLE(), anEscrow), true);
+    }
+
+    function testOnlyOracleCanSubmitResult(address attacker) public openMarket {
+        vm.assume(attacker != oracle);
 
         // skip forward so market expires
         skip(DURATION * 2);
@@ -25,22 +56,22 @@ contract TestPredictionMarket is BaseMarketTest {
         market.submitResult(1);
     }
 
-    function testOnlyEscrowCanMint(address attacker) public {
-        vm.assume(attacker != address(escrow));
+    function testCantSubmitResultIfMarketIsNotClosed() public openMarket {
+        vm.startPrank(oracle, oracle);
+        vm.expectRevert(IPredictionMarket.MarketNotClosed.selector);
+        market.submitResult(1);
+    }
 
-        vm.prank(admin, admin);
-        market.open();
+    function testOnlyEscrowCanMint(address attacker) public openMarket {
+        vm.assume(attacker != address(escrow));
 
         vm.startPrank(attacker, attacker);
         vm.expectRevert();
         market.mint(attacker, 1, 1);
     }
 
-    function testOnlyEscrowCanBatchMint(address attacker) public {
+    function testOnlyEscrowCanBatchMint(address attacker) public openMarket {
         vm.assume(attacker != address(escrow));
-
-        vm.prank(admin, admin);
-        market.open();
 
         uint256[] memory ids = new uint256[](4);
         ids[0] = 1;
@@ -53,11 +84,8 @@ contract TestPredictionMarket is BaseMarketTest {
         market.mintBatch(attacker, ids, ids);
     }
 
-    function testOnlyEscrowCanBurn(address attacker) public {
+    function testOnlyEscrowCanBurn(address attacker) public openMarket {
         vm.assume(attacker != address(escrow));
-
-        vm.prank(admin, admin);
-        market.open();
 
         vm.startPrank(attacker, attacker);
         vm.expectRevert();
