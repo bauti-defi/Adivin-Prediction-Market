@@ -6,6 +6,7 @@ pragma solidity ^0.8.17;
 interface IPredictionMarket {
     error InvalidPredictionId(uint256 predictionId);
     error MarketNotOpen();
+    error MarketNotClosed();
 
     /// @notice Emitted when a prediction result is submitted by oracle
     event ResultSubmitted(uint256 indexed predictionId, uint256 timestamp);
@@ -53,10 +54,6 @@ interface IPredictionMarket {
     /// @notice Indefinitely finalizes a Prediction Market with the given winning prediction.
     /// @dev Caller is expected to be an authorized multisig or oracle (single source of truth)
     function submitResult(uint256 _winningPrediction) external;
-
-    /// @notice Manually closes a Prediction Market. No more predictions can be made.
-    /// Can only be called my Admin role.
-    function closeBetting() external;
 
     function isWinner(uint256 _predictionId) external view returns (bool);
 
