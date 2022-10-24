@@ -36,6 +36,6 @@ library Invariants {
         // get escrow balance
         uint256 escrowBalance = paymentToken.balanceOf(address(_escrow));
 
-        return escrowBalance == _escrow.totalDeposited() - _escrow.totalPaidOut();
+        return escrowBalance == _escrow.totalDeposited();
     }
 }

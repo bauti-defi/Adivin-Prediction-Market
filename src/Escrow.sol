@@ -12,6 +12,8 @@ import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 contract Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for ERC20;
 
+    event Tester(uint256 i);
+
     PredictionMarket public immutable market;
     MarketData public marketData;
     ERC20 public immutable paymentToken;
@@ -79,8 +81,9 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // calculate the amount to pay out, scale the value
         // the winner is paid a proportionate amount of the totalDeposited
         // winnerBalance/circulatingWinningSupply * totalDeposited
-        uint256 _payoutAmount =
-            _tokenBalance * 10 ** paymentToken.decimals() * marketData.totalDeposited / _ciruclatingWinningTokens;
+        uint256 _payoutAmount = _tokenBalance * marketData.totalDeposited / _ciruclatingWinningTokens;
+
+        emit Tester(marketData.totalDeposited);
 
         // update state for totalPaidOut and totalDeposited
         marketData.totalPaidOut += _payoutAmount;

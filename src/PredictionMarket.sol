@@ -133,7 +133,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     function isClosed() external view override returns (bool) {
-        return state == MarketState.CLOSED || expiration >= block.timestamp;
+        return state == MarketState.CLOSED || expiration <= block.timestamp;
     }
 
     function isOpen() external view override returns (bool) {

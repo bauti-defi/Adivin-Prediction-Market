@@ -13,6 +13,8 @@ import "@test/utils/E20.sol";
 import "@test/utils/Invariants.sol";
 
 contract TestFullMarketCycle is BaseTestEnv {
+    event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
+
     uint256 public constant DURATION = 10 * 5;
     uint256 public constant OPTION_COUNT = 4;
 
@@ -100,6 +102,42 @@ contract TestFullMarketCycle is BaseTestEnv {
             assertEq(market.balanceOf(buyer, 1), amountToBuy);
             assertEq(paymentToken.balanceOf(address(escrow)), amountToPay * (i - 99));
         }
+
+        assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
+        assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+    }
+
+    function testCashout() public {
+        vm.prank(admin, admin);
+        market.open();
+
+        uint256 amountToBuy = 100;
+        uint256 amountToPay = dealPaymentToken(user, amountToBuy);
+
+        vm.startPrank(user, user);
+        paymentToken.approve(address(escrow), amountToPay);
+
+        escrow.buy(1, amountToBuy);
+        vm.stopPrank();
+
+        // skip forward so market expires
+        skip(DURATION * 2);
+
+        vm.prank(oracle, oracle);
+        market.submitResult(1);
+
+        vm.startPrank(user, user);
+
+        // check burn event is emitted
+        vm.expectEmit(true, false, false, false, address(market));
+        emit TransferSingle(address(escrow), address(escrow), user, 1, amountToBuy);
+
+        escrow.cashout(1);
+        vm.stopPrank();
+
+        assertEq(paymentToken.balanceOf(address(user)), amountToPay);
+        assertEq(paymentToken.balanceOf(address(escrow)), 0);
+        assertEq(market.balanceOf(user, 1), 0);
 
         assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
         assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
