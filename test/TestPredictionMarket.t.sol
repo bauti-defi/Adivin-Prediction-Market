@@ -28,6 +28,17 @@ contract TestPredictionMarket is BaseMarketTest {
         assertEq(market.hasRole(market.ORACLE_ROLE(), anOracle), true);
     }
 
+    function testAdminCanRemoveOracle() public {
+        bytes32 role = market.ORACLE_ROLE();
+
+        assertEq(market.hasRole(role, address(oracle)), true);
+
+        vm.prank(admin, admin);
+        market.revokeRole(role, address(oracle));
+
+        assertEq(market.hasRole(role, address(oracle)), false);
+    }
+
     function testOnlyAdminCanSetEscrow(address attacker) public {
         vm.assume(attacker != admin);
 
@@ -43,6 +54,17 @@ contract TestPredictionMarket is BaseMarketTest {
         market.setEscrow(anEscrow);
 
         assertEq(market.hasRole(market.ESCROW_ROLE(), anEscrow), true);
+    }
+
+    function testAdminCanRemoveEscrow() public {
+        bytes32 role = market.ESCROW_ROLE();
+
+        assertEq(market.hasRole(role, address(escrow)), true);
+
+        vm.prank(admin, admin);
+        market.revokeRole(role, address(escrow));
+
+        assertEq(market.hasRole(role, address(escrow)), false);
     }
 
     function testOnlyOracleCanSubmitResult(address attacker) public openMarket {
