@@ -1,12 +1,14 @@
 
 # Adivin Prediction Market
 
+An EVM based prediction market. Users deposit their wager in an Escrow contract in exchange for an ERC1155 token representation of their bet. Prediction tokens are tradable on any secondary market (ex: opensean). Once the market expires, an Oracle submits the winning result. Users can then cash out their winnings from the Escrow contract. Cashing out a wager results in the user burning their ERC1155 token and receiving their winnings from the Escrow contract.
+
 ## Design Spec
 
 ### Actors
 
 - Administrator
-- Better
+- User
 - Oracle
 
 #### Administrator
@@ -15,9 +17,11 @@
 - Create Market
 - Open Market
 - Pause Market
+- Set Oracle
+- Set Escrow
 
 
-#### Better
+#### User
 
 **Actions**
 - Place Bet
@@ -27,23 +31,13 @@
 
 **Actions**
 - Set Market Result (MarketState == FINISHED)
-- Close betting (MarketState == CLOSED)
 
 ### Contracts
+- Factory: Creates markets 
+- PredictionMarket: ERC1155 wrapper representing a prediction
+- Escrow: Holds all wagers
 
-#### PredictionMarket
+### Diagrams
+[Sequence Diagram](/diagrams/Adivin%20Sequence%20diagram.png)
 
-**Actions**
-- Mint tokens (only escrow)
-- Burn tokens (only escrow)
-- Submit result (only oracle)
-- Close betting (only oracle)
-- Pause betting (only admin)
-- unPause betting (only admin)
-
-#### Escrow
-
-**Actions**
-- Place bet (only better)
-- Cashout bet (only better)
-- Start market betting (only admin)
+[Flow Diagram](/diagrams/Adivin%20Flow.png)
