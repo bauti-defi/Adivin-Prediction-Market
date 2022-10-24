@@ -64,7 +64,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     modifier whenClosed() {
-        if (!this.isClosed()) revert MarketNotClosed();
+        if (expiration > block.timestamp) revert MarketNotClosed();
 
         // switch flag if necesarry
         if (state != MarketState.CLOSED) state = MarketState.CLOSED;
