@@ -56,6 +56,12 @@ contract TestPredictionMarket is BaseMarketTest {
         market.submitResult(1);
     }
 
+    function testCantSubmitResultIfMarketIsNotClosed() public openMarket {
+        vm.startPrank(oracle, oracle);
+        vm.expectRevert(IPredictionMarket.MarketNotClosed.selector);
+        market.submitResult(1);
+    }
+
     function testOnlyEscrowCanMint(address attacker) public openMarket {
         vm.assume(attacker != address(escrow));
 
