@@ -54,7 +54,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     modifier whenOpen() {
-        require(this.isOpen(), "PredictionMarket: not open");
+        if (!this.isOpen()) revert MarketNotOpen();
         _;
     }
 
@@ -110,15 +110,15 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET STATE SETTERS ~~~~~~~~~~~~~~~~~~~~~~
 
-    function open() external whenNotStarted onlyRole(DEFAULT_ADMIN_ROLE) {
+    function open() external whenNotStarted onlyRole(ADMIN_ROLE) {
         state = MarketState.OPEN;
     }
 
-    function unpause() external whenPaused onlyRole(DEFAULT_ADMIN_ROLE) {
+    function unpause() external whenPaused onlyRole(ADMIN_ROLE) {
         state = MarketState.OPEN;
     }
 
-    function pause() external whenOpen onlyRole(DEFAULT_ADMIN_ROLE) {
+    function pause() external whenOpen onlyRole(ADMIN_ROLE) {
         state = MarketState.PAUSED;
     }
 
@@ -195,5 +195,13 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     function isWinner(uint256 _predictionId) external view validPrediction(_predictionId) returns (bool) {
         return winningPrediction == _predictionId;
+    }
+
+    function setOracle(address _oracleAddress) public onlyRole(ADMIN_ROLE) {
+        _setupRole(ORACLE_ROLE, _oracleAddress);
+    }
+
+    function setEscrow(address _escrowAddress) public onlyRole(ADMIN_ROLE) {
+        _setupRole(ESCROW_ROLE, _escrowAddress);
     }
 }

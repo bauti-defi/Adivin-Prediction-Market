@@ -5,6 +5,7 @@ pragma solidity ^0.8.17;
 /// @notice IPredictionMarket is ERC1155 wrapper impementation
 interface IPredictionMarket {
     error InvalidPredictionId(uint256 predictionId);
+    error MarketNotOpen();
 
     /// @notice Emitted when a prediction result is submitted by oracle
     event ResultSubmitted(uint256 indexed predictionId, uint256 timestamp);
@@ -58,4 +59,8 @@ interface IPredictionMarket {
     function closeBetting() external;
 
     function isWinner(uint256 _predictionId) external view returns (bool);
+
+    function setOracle(address _oracleAddress) external;
+
+    function setEscrow(address _escrowAddress) external;
 }

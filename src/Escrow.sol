@@ -30,7 +30,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
     function buy(uint256 _predictionId, uint256 _amount) external override nonReentrant {
         // scale up according to decimals
-        uint256 depositAmount = _amount * paymentToken.decimals();
+        uint256 depositAmount = _amount * 10 ** paymentToken.decimals();
 
         // check if we have enough allowance
         require(paymentToken.allowance(msg.sender, address(this)) >= depositAmount, "Escrow: insufficient allowance");
@@ -80,7 +80,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // the winner is paid a proportionate amount of the totalDeposited
         // winnerBalance/circulatingWinningSupply * totalDeposited
         uint256 _payoutAmount =
-            _tokenBalance * paymentToken.decimals() * marketData.totalDeposited / _ciruclatingWinningTokens;
+            _tokenBalance * 10 ** paymentToken.decimals() * marketData.totalDeposited / _ciruclatingWinningTokens;
 
         // update state for totalPaidOut and totalDeposited
         marketData.totalPaidOut += _payoutAmount;

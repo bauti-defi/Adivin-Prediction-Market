@@ -6,6 +6,8 @@ import "forge-std/console2.sol";
 
 import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 
+import "@test/utils/E20.sol";
+
 import "@src/Factory.sol";
 
 abstract contract BaseTestEnv is Test {
@@ -13,7 +15,7 @@ abstract contract BaseTestEnv is Test {
 
     address public admin;
     address public oracle;
-    ERC20 public paymentToken;
+    E20 public paymentToken;
     Factory public factory;
 
     function setUp() public virtual {
@@ -24,7 +26,7 @@ abstract contract BaseTestEnv is Test {
         oracle = makeAddr("Oracle");
 
         console2.log("Created ERC20 payment token reference");
-        paymentToken = ERC20(vm.addr(1));
+        paymentToken = new E20();
 
         vm.prank(admin, admin);
         console2.log("Created factory");
