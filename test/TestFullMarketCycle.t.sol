@@ -26,7 +26,7 @@ contract TestFullMarketCycle is BaseTestEnv {
     modifier checkInvariants() {
         _;
         assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
-        assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+        if (!market.isFinished()) assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
     }
 
     function setUp() public override {
@@ -94,7 +94,7 @@ contract TestFullMarketCycle is BaseTestEnv {
 
         uint256 amountToBuy = 100;
 
-        for (uint256 i = 100; i < uint256(buyerCount); i++) {
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
             address buyer = vm.addr(i);
             uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
 
@@ -139,6 +139,80 @@ contract TestFullMarketCycle is BaseTestEnv {
         assertEq(paymentToken.balanceOf(address(user)), amountToPay);
         assertEq(paymentToken.balanceOf(address(escrow)), 0);
         assertEq(market.balanceOf(user, 1), 0);
+    }
+
+    function testSimpleMultiCashout(uint8 buyerCount) public checkInvariants {
+        vm.prank(admin, admin);
+        market.open();
+
+        uint256 amountToBuy = 100;
+
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+            uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
+
+            vm.startPrank(buyer, buyer);
+            paymentToken.approve(address(escrow), amountToPay);
+
+            escrow.buy(1, amountToBuy);
+            vm.stopPrank();
+        }
+
+        // skip forward so market expires
+        skip(DURATION * 2);
+
+        vm.prank(oracle, oracle);
+        market.submitResult(1);
+
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+
+            vm.startPrank(buyer, buyer);
+            escrow.cashout(1);
+            vm.stopPrank();
+        }
+
+        assertEq(paymentToken.balanceOf(address(escrow)), 0);
+        assertEq(market.totalSupply(1), 0);
+    }
+
+    function testComplexMultiCashout(uint8 buyerCount) public checkInvariants {
+        vm.prank(admin, admin);
+        market.open();
+
+        uint256 amountToBuy = 100;
+
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+            uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
+
+            vm.startPrank(buyer, buyer);
+            paymentToken.approve(address(escrow), amountToPay);
+
+            // if even, buy token 1, else buy token 2
+            if (i % 2 == 0) {
+                escrow.buy(1, amountToBuy);
+            } else {
+                escrow.buy(2, amountToBuy);
+            }
+            vm.stopPrank();
+        }
+
+        // skip forward so market expires
+        skip(DURATION * 2);
+
+        vm.prank(oracle, oracle);
+        market.submitResult(1);
+
+        for (uint256 i = 100; i < 100 + uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+
+            vm.startPrank(buyer, buyer);
+            if (i % 2 == 0) {
+                escrow.cashout(1);
+            }
+            vm.stopPrank();
+        }
     }
 
     function testCantCashoutBadPrediction() public checkInvariants {
@@ -186,5 +260,19 @@ contract TestFullMarketCycle is BaseTestEnv {
         vm.expectRevert(abi.encodeWithSelector(IEscrow.InsufficientPredictionTokenBalance.selector, 1));
         escrow.cashout(1);
         vm.stopPrank();
+    }
+
+    function testOnlyOracleCanSubmitResult(address attacker) public {
+        vm.assume(attacker != oracle);
+
+        vm.prank(admin, admin);
+        market.open();
+
+        // skip forward so market expires
+        skip(DURATION * 2);
+
+        vm.startPrank(attacker, attacker);
+        vm.expectRevert();
+        market.submitResult(1);
     }
 }
