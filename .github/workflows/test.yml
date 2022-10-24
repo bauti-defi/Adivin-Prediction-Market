@@ -1,6 +1,9 @@
 name: test
 
-on: workflow_dispatch
+on: 
+  pull_request: 
+    braches:
+      - main
 
 env:
   FOUNDRY_PROFILE: ci
