@@ -8,8 +8,8 @@
 - [X] Only factory admin can create market
 - [X] Set oracle role
 - [X] Set Escrow role
-- [ ] Remove escrow role
-- [ ] Remove oracle role
+- [X] Remove escrow role
+- [X] Remove oracle role
 - [X] Make single prediction
 - [X] Make multi prediction
 - [X] Can't cashout if market has not finalized
