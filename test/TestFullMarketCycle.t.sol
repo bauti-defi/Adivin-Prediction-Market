@@ -14,6 +14,7 @@ import "@test/utils/Invariants.sol";
 
 contract TestFullMarketCycle is BaseTestEnv {
     uint256 public constant DURATION = 10 * 5;
+    uint256 public constant OPTION_COUNT = 4;
 
     PredictionMarket public market;
     Escrow public escrow;
@@ -25,7 +26,7 @@ contract TestFullMarketCycle is BaseTestEnv {
         // create market
         vm.startPrank(admin, admin);
         (address _marketAddress, address _escrowAddress) =
-            factory.createMarket(4, block.timestamp + DURATION, address(paymentToken));
+            factory.createMarket(OPTION_COUNT, block.timestamp + DURATION, address(paymentToken));
         market = PredictionMarket(_marketAddress);
         escrow = Escrow(_escrowAddress);
 
@@ -73,6 +74,32 @@ contract TestFullMarketCycle is BaseTestEnv {
 
         escrow.buy(1, amountToBuy);
         vm.stopPrank();
+
+        assertEq(paymentToken.balanceOf(address(escrow)), amountToPay);
+        assertEq(market.balanceOf(user, 1), amountToBuy);
+
+        assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
+        assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+    }
+
+    function testMultiBuy(uint8 buyerCount) public {
+        vm.prank(admin, admin);
+        market.open();
+
+        uint256 amountToBuy = 100;
+
+        for (uint256 i = 100; i < uint256(buyerCount); i++) {
+            address buyer = vm.addr(i);
+            uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
+
+            vm.startPrank(buyer, buyer);
+            paymentToken.approve(address(escrow), amountToPay);
+
+            escrow.buy(1, amountToBuy);
+            vm.stopPrank();
+            assertEq(market.balanceOf(buyer, 1), amountToBuy);
+            assertEq(paymentToken.balanceOf(address(escrow)), amountToPay * (i - 99));
+        }
 
         assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
         assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
