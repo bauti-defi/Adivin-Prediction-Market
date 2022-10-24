@@ -6,42 +6,30 @@ import "forge-std/console2.sol";
 
 import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 
-import "@src/Escrow.sol";
-import "@src/PredictionMarket.sol";
+import "@test/utils/E20.sol";
+
+import "@src/Factory.sol";
 
 abstract contract BaseTestEnv is Test {
     uint256 public constant predictionCount = 3;
 
-    address public deployer;
+    address public admin;
     address public oracle;
-    ERC20 public paymentToken;
-    Escrow public escrow;
-    PredictionMarket public predictionMarket;
+    E20 public paymentToken;
+    Factory public factory;
 
     function setUp() public virtual {
         console2.log("Created deployer address");
-        deployer = makeAddr("Deployer");
+        admin = makeAddr("Admin");
 
         console2.log("Created oracle address");
         oracle = makeAddr("Oracle");
 
         console2.log("Created ERC20 payment token reference");
-        paymentToken = ERC20(vm.addr(1));
+        paymentToken = new E20();
 
-        vm.startPrank(deployer, deployer);
-        // console2.log("Created Escrow");
-        // escrow = new Escrow(address(paymentToken));
-        // vm.label(address(escrow), "Escrow");
-
-        // console2.log("Grant oracle MARKET_CLOSER_ROLE");
-        // escrow.grantRole(escrow.MARKET_CLOSER_ROLE(), oracle);
-
-        // console2.log("Created Prediction Market ERC1155");
-        // predictionMarket = new PredictionMarket(predictionCount);
-        // vm.label(address(predictionMarket), "Prediction Market");
-
-        // console2.log("Opened prediction market");
-        // escrow.openMarket(address(predictionMarket));
-        vm.stopPrank();
+        vm.prank(admin, admin);
+        console2.log("Created factory");
+        factory = new Factory();
     }
 }

@@ -8,8 +8,11 @@ import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin-contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 
+/// @author bauti.eth
 contract Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for ERC20;
+
+    event Tester(uint256 i);
 
     PredictionMarket public immutable market;
     MarketData public marketData;
@@ -24,12 +27,12 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
         require(market.isNotStarted(), "Escrow: market has already started");
 
-        marketData = MarketData({market: market, totalDeposited: 0, totalPaidOut: 0});
+        marketData = MarketData({totalDeposited: 0, totalPaidOut: 0});
     }
 
     function buy(uint256 _predictionId, uint256 _amount) external override nonReentrant {
         // scale up according to decimals
-        uint256 depositAmount = _amount * paymentToken.decimals();
+        uint256 depositAmount = _amount * 10 ** paymentToken.decimals();
 
         // check if we have enough allowance
         require(paymentToken.allowance(msg.sender, address(this)) >= depositAmount, "Escrow: insufficient allowance");
@@ -78,8 +81,9 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // calculate the amount to pay out, scale the value
         // the winner is paid a proportionate amount of the totalDeposited
         // winnerBalance/circulatingWinningSupply * totalDeposited
-        uint256 _payoutAmount =
-            _tokenBalance * paymentToken.decimals() * marketData.totalDeposited / _ciruclatingWinningTokens;
+        uint256 _payoutAmount = _tokenBalance * marketData.totalDeposited / _ciruclatingWinningTokens;
+
+        emit Tester(marketData.totalDeposited);
 
         // update state for totalPaidOut and totalDeposited
         marketData.totalPaidOut += _payoutAmount;
@@ -92,4 +96,11 @@ contract Escrow is IEscrow, ReentrancyGuard {
         emit PredictionPaidOut(msg.sender, _payoutAmount);
     }
 
+    function totalPaidOut() external view override returns (uint256) {
+        return marketData.totalPaidOut;
+    }
+
+    function totalDeposited() external view override returns (uint256) {
+        return marketData.totalDeposited;
+    }
 }

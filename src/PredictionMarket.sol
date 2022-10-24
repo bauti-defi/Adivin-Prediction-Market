@@ -7,7 +7,9 @@ import "@openzeppelin-contracts/access/Ownable.sol";
 import "@openzeppelin-contracts/access/AccessControl.sol";
 import "@src/interfaces/IPredictionMarket.sol";
 
+/// @author bauti.eth
 contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155Supply {
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant ESCROW_ROLE = keccak256("ESCROW_ROLE");
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
 
@@ -25,8 +27,14 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
         require(_expiration > block.timestamp, "PredictionMarket: expiration must be in the future");
 
-        // set EOA as admin
-        _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
+        // set admin role to EOA
+        _setupRole(ADMIN_ROLE, tx.origin);
+
+        // Set admin for escrow role
+        _setRoleAdmin(ESCROW_ROLE, ADMIN_ROLE);
+
+        // set Admin for oracle role
+        _setRoleAdmin(ORACLE_ROLE, ADMIN_ROLE);
 
         optionCount = _optionCount;
         expiration = _expiration;
@@ -46,7 +54,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     modifier whenOpen() {
-        require(this.isOpen(), "PredictionMarket: not open");
+        if (!this.isOpen()) revert MarketNotOpen();
         _;
     }
 
@@ -102,15 +110,15 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET STATE SETTERS ~~~~~~~~~~~~~~~~~~~~~~
 
-    function open() external whenNotStarted onlyRole(DEFAULT_ADMIN_ROLE) {
+    function open() external whenNotStarted onlyRole(ADMIN_ROLE) {
         state = MarketState.OPEN;
     }
 
-    function unpause() external whenPaused onlyRole(DEFAULT_ADMIN_ROLE) {
+    function unpause() external whenPaused onlyRole(ADMIN_ROLE) {
         state = MarketState.OPEN;
     }
 
-    function pause() external whenOpen onlyRole(DEFAULT_ADMIN_ROLE) {
+    function pause() external whenOpen onlyRole(ADMIN_ROLE) {
         state = MarketState.PAUSED;
     }
 
@@ -125,7 +133,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     function isClosed() external view override returns (bool) {
-        return state == MarketState.CLOSED || expiration >= block.timestamp;
+        return state == MarketState.CLOSED || expiration <= block.timestamp;
     }
 
     function isOpen() external view override returns (bool) {
@@ -153,6 +161,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
         winningPrediction = _winningPrediction;
         state = MarketState.FINISHED;
+
+        emit ResultSubmitted(_winningPrediction, block.timestamp);
     }
 
     /// ! Can force close regardless of expiration
@@ -185,5 +195,13 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     function isWinner(uint256 _predictionId) external view validPrediction(_predictionId) returns (bool) {
         return winningPrediction == _predictionId;
+    }
+
+    function setOracle(address _oracleAddress) public onlyRole(ADMIN_ROLE) {
+        _setupRole(ORACLE_ROLE, _oracleAddress);
+    }
+
+    function setEscrow(address _escrowAddress) public onlyRole(ADMIN_ROLE) {
+        _setupRole(ESCROW_ROLE, _escrowAddress);
     }
 }
