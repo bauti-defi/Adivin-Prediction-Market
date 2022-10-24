@@ -13,6 +13,12 @@ interface IEscrow {
         uint256 totalPaidOut;
     }
 
+    /// @dev Emitted when user tries to cashout an incorrect prediction
+    error IncorrectPrediction(uint256 predictionId);
+
+    /// @dev Emitted when a user tries to cashout a token they do not have
+    error InsufficientPredictionTokenBalance(uint256 predictionId);
+
     event PredictionMade(address indexed buyer, uint256 predictionId, uint256 amount, uint256 pot);
     event PredictionPaidOut(address indexed claimer, uint256 amount);
 

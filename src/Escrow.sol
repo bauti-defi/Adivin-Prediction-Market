@@ -12,8 +12,6 @@ import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 contract Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for ERC20;
 
-    event Tester(uint256 i);
-
     PredictionMarket public immutable market;
     MarketData public marketData;
     ERC20 public immutable paymentToken;
@@ -59,13 +57,13 @@ contract Escrow is IEscrow, ReentrancyGuard {
         bool isAWinner = market.isWinner(_predictionId);
 
         // Only winners can cashout, save noobs the gas fee
-        require(isAWinner, "Escrow: Prediction is not a winner");
+        if (!isAWinner) revert IncorrectPrediction(_predictionId);
 
         // Get caller token balance
         uint256 _tokenBalance = market.balanceOf(msg.sender, _predictionId);
 
         // Check caller has tokens
-        require(_tokenBalance > 0, "Escrow: Caller has no tokens");
+        if (_tokenBalance == 0) revert InsufficientPredictionTokenBalance(_predictionId);
 
         // Get the circulating supply of winning tokens
         // ! notice burned tokens are not accounted for
@@ -82,8 +80,6 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // the winner is paid a proportionate amount of the totalDeposited
         // winnerBalance/circulatingWinningSupply * totalDeposited
         uint256 _payoutAmount = _tokenBalance * marketData.totalDeposited / _ciruclatingWinningTokens;
-
-        emit Tester(marketData.totalDeposited);
 
         // update state for totalPaidOut and totalDeposited
         marketData.totalPaidOut += _payoutAmount;

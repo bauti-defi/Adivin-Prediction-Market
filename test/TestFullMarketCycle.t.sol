@@ -8,6 +8,7 @@ import "@test/BaseTestEnv.sol";
 import "@src/Factory.sol";
 import "@src/PredictionMarket.sol";
 import "@src/interfaces/IPredictionMarket.sol";
+import "@src/interfaces/IEscrow.sol";
 import "@src/Escrow.sol";
 import "@test/utils/E20.sol";
 import "@test/utils/Invariants.sol";
@@ -21,6 +22,12 @@ contract TestFullMarketCycle is BaseTestEnv {
     PredictionMarket public market;
     Escrow public escrow;
     address public user;
+
+    modifier checkInvariants() {
+        _;
+        assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
+        assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+    }
 
     function setUp() public override {
         super.setUp();
@@ -64,7 +71,7 @@ contract TestFullMarketCycle is BaseTestEnv {
         vm.stopPrank();
     }
 
-    function testBuy() public {
+    function testBuy() public checkInvariants {
         vm.prank(admin, admin);
         market.open();
 
@@ -79,12 +86,9 @@ contract TestFullMarketCycle is BaseTestEnv {
 
         assertEq(paymentToken.balanceOf(address(escrow)), amountToPay);
         assertEq(market.balanceOf(user, 1), amountToBuy);
-
-        assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
-        assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
     }
 
-    function testMultiBuy(uint8 buyerCount) public {
+    function testMultiBuy(uint8 buyerCount) public checkInvariants {
         vm.prank(admin, admin);
         market.open();
 
@@ -102,12 +106,9 @@ contract TestFullMarketCycle is BaseTestEnv {
             assertEq(market.balanceOf(buyer, 1), amountToBuy);
             assertEq(paymentToken.balanceOf(address(escrow)), amountToPay * (i - 99));
         }
-
-        assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
-        assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
     }
 
-    function testCashout() public {
+    function testCashout() public checkInvariants {
         vm.prank(admin, admin);
         market.open();
 
@@ -138,8 +139,52 @@ contract TestFullMarketCycle is BaseTestEnv {
         assertEq(paymentToken.balanceOf(address(user)), amountToPay);
         assertEq(paymentToken.balanceOf(address(escrow)), 0);
         assertEq(market.balanceOf(user, 1), 0);
+    }
 
-        assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
-        assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+    function testCantCashoutBadPrediction() public checkInvariants {
+        uint256 WINNING_PREDICTION = 1;
+        uint256 LOSING_PREDICTION = 2;
+        vm.prank(admin, admin);
+        market.open();
+
+        uint256 amountToBuy = 100;
+        uint256 amountToPay = dealPaymentToken(user, amountToBuy);
+
+        vm.startPrank(user, user);
+        paymentToken.approve(address(escrow), amountToPay);
+
+        escrow.buy(LOSING_PREDICTION, amountToBuy);
+        vm.stopPrank();
+
+        // skip forward so market expires
+        skip(DURATION * 2);
+
+        vm.prank(oracle, oracle);
+        market.submitResult(WINNING_PREDICTION);
+
+        vm.startPrank(user, user);
+        vm.expectRevert(abi.encodeWithSelector(IEscrow.IncorrectPrediction.selector, LOSING_PREDICTION));
+        escrow.cashout(LOSING_PREDICTION);
+        vm.stopPrank();
+
+        assertEq(paymentToken.balanceOf(address(user)), 0);
+        assertEq(paymentToken.balanceOf(address(escrow)), amountToPay);
+        assertEq(market.balanceOf(user, LOSING_PREDICTION), amountToBuy);
+    }
+
+    function testCantCashoutPredictionNotHeldInWallet() public checkInvariants {
+        vm.prank(admin, admin);
+        market.open();
+
+        // skip forward so market expires
+        skip(DURATION * 2);
+
+        vm.prank(oracle, oracle);
+        market.submitResult(1);
+
+        vm.startPrank(user, user);
+        vm.expectRevert(abi.encodeWithSelector(IEscrow.InsufficientPredictionTokenBalance.selector, 1));
+        escrow.cashout(1);
+        vm.stopPrank();
     }
 }
