@@ -21,9 +21,12 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     /// @dev 0 means no winner yet.
     uint256 public winningPrediction;
     uint256 public immutable expiration;
+    uint256 public immutable individualTokenSupplyCap;
 
     /// TODO: Add correct media URI
-    constructor(uint256 _optionCount, uint256 _expiration) ERC1155("https://localhost:3000") {
+    constructor(uint256 _optionCount, uint256 _expiration, uint256 _individualTokenSupplyCap)
+        ERC1155("https://localhost:3000")
+    {
         require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
         require(_expiration > block.timestamp, "PredictionMarket: expiration must be in the future");
 
@@ -38,13 +41,19 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
         optionCount = _optionCount;
         expiration = _expiration;
+
+        if (_individualTokenSupplyCap == 0) {
+            _individualTokenSupplyCap = type(uint256).max;
+        }
+
+        individualTokenSupplyCap = _individualTokenSupplyCap;
         state = MarketState.NOT_STARTED;
     }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MODIFIERS ~~~~~~~~~~~~~~~~~~~~~~
 
     modifier validPrediction(uint256 predictionId) {
-        _validPrediction(predictionId);
+        _checkIsValidPrediction(predictionId);
         _;
     }
 
@@ -95,6 +104,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         validPrediction(_predictionId)
         onlyRole(ESCROW_ROLE)
     {
+        _checkMintDoesNotExceedMaxSupply(_predictionId, _amount);
+
         _mint(_better, _predictionId, _amount, "");
     }
 
@@ -105,7 +116,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         onlyRole(ESCROW_ROLE)
     {
         for (uint256 i = 0; i < _predictionIds.length; i++) {
-            _validPrediction(_predictionIds[i]);
+            _checkIsValidPrediction(_predictionIds[i]);
+            _checkMintDoesNotExceedMaxSupply(_predictionIds[i], _amounts[i]);
         }
 
         _mintBatch(_better, _predictionIds, _amounts, "");
@@ -187,7 +199,12 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ HELPERS ~~~~~~~~~~~~~~~~~~~~~~
 
-    function _validPrediction(uint256 predictionId) private view {
+    /// @notice this does not check that _tokenId is a valid predictionId
+    function _checkMintDoesNotExceedMaxSupply(uint256 _tokenId, uint256 _amount) private view {
+        if (this.totalSupply(_tokenId) + _amount > individualTokenSupplyCap) revert MaximumSupplyReached(_tokenId);
+    }
+
+    function _checkIsValidPrediction(uint256 predictionId) private view {
         if (predictionId > optionCount || predictionId == 0) revert InvalidPredictionId(predictionId);
     }
 

@@ -7,6 +7,7 @@ interface IPredictionMarket {
     error InvalidPredictionId(uint256 predictionId);
     error MarketNotOpen();
     error MarketNotClosed();
+    error MaximumSupplyReached(uint256 tokenId);
 
     /// @notice Emitted when a prediction result is submitted by oracle
     event ResultSubmitted(uint256 indexed predictionId, uint256 timestamp);

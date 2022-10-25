@@ -20,16 +20,17 @@ contract Factory is IFactory {
     }
 
     /// @notice Be careful what token you pass in. That is why this is admin only.
-    function createMarket(uint256 _predictionCount, uint256 _marketExpiration, address _paymentToken)
-        public
-        onlyAdmin
-        returns (address, address)
-    {
+    function createMarket(
+        uint256 _predictionCount,
+        uint256 _marketExpiration,
+        uint256 _individualTokenSupplyCap,
+        address _paymentToken
+    ) public onlyAdmin returns (address, address) {
         // increment counter
         totalMarkets++;
 
         // create market
-        PredictionMarket market = new PredictionMarket(_predictionCount, _marketExpiration);
+        PredictionMarket market = new PredictionMarket(_predictionCount, _marketExpiration, _individualTokenSupplyCap);
 
         // create escrow
         Escrow escrow = new Escrow(_paymentToken, address(market));
