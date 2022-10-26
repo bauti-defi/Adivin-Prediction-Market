@@ -39,6 +39,19 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
+    function testCantMintMoreThanAllowedTokenSupplyCap() public openMarket {
+        // 10 more than allowed cap
+        uint256 amountToBuy = market.individualTokenSupplyCap() + 10;
+        uint256 amountToPay = dealPaymentToken(user, amountToBuy);
+
+        vm.startPrank(user, user);
+        paymentToken.approve(address(escrow), amountToPay);
+
+        vm.expectRevert(abi.encodeWithSelector(IPredictionMarket.MaximumSupplyReached.selector, 1));
+        escrow.buy(1, amountToBuy);
+        vm.stopPrank();
+    }
+
     function testCantBuyIfMarketIsPaused() public openMarket pauseMarket {
         uint256 amountToBuy = 100;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);

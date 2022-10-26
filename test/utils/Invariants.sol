@@ -38,4 +38,13 @@ library Invariants {
 
         return escrowBalance == _escrow.totalDeposited();
     }
+
+    function totalTokenSupplyIsLessThanAllowedSupplyCap(PredictionMarket _market) external view returns (bool) {
+        // prediction count starts at 1.
+        // that means predictionCount = 5 is 5 options.
+        for (uint256 i = 1; i < _market.optionCount(); i++) {
+            if (_market.totalSupply(i) > _market.individualTokenSupplyCap()) return false;
+        }
+        return true;
+    }
 }

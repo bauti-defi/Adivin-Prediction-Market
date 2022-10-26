@@ -17,6 +17,9 @@ abstract contract BaseMarketTest is BaseTestEnv {
     uint256 public constant DURATION = 10 * 5;
     uint256 public constant OPTION_COUNT = 4;
 
+    /// @notice use a massive number
+    uint256 public constant INDIVIDUAL_TOKEN_SUPPLY_CAP = 10 ** 6;
+
     PredictionMarket public market;
     Escrow public escrow;
     address public user;
@@ -25,6 +28,7 @@ abstract contract BaseMarketTest is BaseTestEnv {
         _;
         assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
         if (!market.isFinished()) assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+        assertTrue(Invariants.totalTokenSupplyIsLessThanAllowedSupplyCap(market));
     }
 
     modifier pauseMarket() {
@@ -56,8 +60,9 @@ abstract contract BaseMarketTest is BaseTestEnv {
 
         // create market
         vm.startPrank(admin, admin);
-        (address _marketAddress, address _escrowAddress) =
-            factory.createMarket(OPTION_COUNT, block.timestamp + DURATION, address(paymentToken));
+        (address _marketAddress, address _escrowAddress) = factory.createMarket(
+            OPTION_COUNT, block.timestamp + DURATION, INDIVIDUAL_TOKEN_SUPPLY_CAP, address(paymentToken)
+        );
         market = PredictionMarket(_marketAddress);
         escrow = Escrow(_escrowAddress);
 
