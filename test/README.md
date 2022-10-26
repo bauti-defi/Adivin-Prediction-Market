@@ -26,6 +26,7 @@
 - [X] Submit market result
 - [X] Can't submit market result unless oracle
 - [X] Can't submit market result unless market is closed
+- [X] Can't mint more of a token than the allowed individual supply cap
 
 ## Invariants
 
@@ -37,3 +38,6 @@ Sum(totalDeposited - totalPaidOut) = paymentToken.balanceOf(escrow)
 
 > This assumes no one has "maliciously" sent funds to the escrow wallet. This is a reasonable assumption because 
 the funds are un-redeemable.
+
+### 3
+token supply <= individual supply cap

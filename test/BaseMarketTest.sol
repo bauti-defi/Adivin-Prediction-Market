@@ -17,8 +17,8 @@ abstract contract BaseMarketTest is BaseTestEnv {
     uint256 public constant DURATION = 10 * 5;
     uint256 public constant OPTION_COUNT = 4;
 
-    /// @notice this will max it default to type(uint256).max
-    uint256 public constant INDIVIDUAL_TOKEN_SUPPLY_CAP = 0;
+    /// @notice use a massive number
+    uint256 public constant INDIVIDUAL_TOKEN_SUPPLY_CAP = 10 ** 6;
 
     PredictionMarket public market;
     Escrow public escrow;
@@ -28,6 +28,7 @@ abstract contract BaseMarketTest is BaseTestEnv {
         _;
         assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
         if (!market.isFinished()) assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+        assertTrue(Invariants.totalTokenSupplyIsLessThanAllowedSupplyCap(market));
     }
 
     modifier pauseMarket() {
