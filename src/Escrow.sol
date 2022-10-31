@@ -174,4 +174,16 @@ contract Escrow is IEscrow, ReentrancyGuard {
     function totalDeposited() external view override returns (uint256) {
         return marketData.totalDeposited;
     }
+
+    function totalFee() external view override returns (uint256) {
+        return marketData.totalFee;
+    }
+
+    function getRevShareRecipients() external view override returns (address[] memory) {
+        return revShareRecipients;
+    }
+
+    function getRevSharePartitions() external view override returns (uint256[] memory) {
+        return revSharePartitions;
+    }
 }

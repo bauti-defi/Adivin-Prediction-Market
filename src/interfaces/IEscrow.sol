@@ -36,6 +36,12 @@ interface IEscrow {
 
     function totalPaidOut() external view returns (uint256);
 
+    function totalFee() external view returns (uint256);
+
+    function getRevShareRecipients() external view returns (address[] memory);
+
+    function getRevSharePartitions() external view returns (uint256[] memory);
+
     function setProtocolFee(uint256 _newFee) external;
 
     function setRevShareRecipients(address[] calldata _recipients, uint256[] calldata _shares) external;

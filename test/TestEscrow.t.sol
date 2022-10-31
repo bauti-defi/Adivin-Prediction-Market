@@ -52,7 +52,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testCantBuyIfMarketIsPaused() public openMarket pauseMarket checkInvariants{
+    function testCantBuyIfMarketIsPaused() public openMarket pauseMarket checkInvariants {
         uint256 amountToBuy = 100;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
 
@@ -268,6 +268,39 @@ contract TestEscrow is BaseMarketTest {
         vm.startPrank(admin, admin);
         vm.expectRevert(bytes("Escrow: rev shares must be greater than 0"));
         escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+    }
+
+    function testClearRevShareRecipients() public {
+        address[] memory recipients = new address[](2);
+        recipients[0] = vm.addr(1000);
+        recipients[1] = vm.addr(1001);
+
+        uint256[] memory partitions = new uint256[](2);
+        partitions[0] = 40;
+        partitions[1] = 60;
+
+        vm.startPrank(admin, admin);
+        escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+
+        vm.startPrank(admin, admin);
+        escrow.clearRevShareRecipients();
+        vm.stopPrank();
+
+        address[] memory clearedRecipients = escrow.getRevShareRecipients();
+        uint256[] memory clearedPartitions = escrow.getRevSharePartitions();
+
+        assertEq(clearedRecipients.length, 0);
+        assertEq(clearedPartitions.length, 0);
+    }
+
+    function testOnlyAdminCanClearRevShareRecipients(address attacker) public {
+        vm.assume(attacker != admin);
+
+        vm.startPrank(attacker, attacker);
+        vm.expectRevert(bytes("Escrow: only admin can call this function"));
+        escrow.clearRevShareRecipients();
         vm.stopPrank();
     }
 }

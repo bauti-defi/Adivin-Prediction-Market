@@ -9,7 +9,11 @@ import "@openzeppelin-contracts/token/ERC20/ERC20.sol";
 
 library Invariants {
     /// @dev This tests for invariant #1
-    function circulatingTokenSupplyEqEscrowBalance(PredictionMarket _market, Escrow _escrow) external view returns (bool) {
+    function circulatingTokenSupplyEqEscrowBalance(PredictionMarket _market, Escrow _escrow)
+        external
+        view
+        returns (bool)
+    {
         ERC20 paymentToken = _escrow.paymentToken();
 
         // get sum of all prediction tokens
@@ -46,7 +50,7 @@ library Invariants {
         sum *= 10 ** paymentToken.decimals();
 
         // get escrow balance, scaled down
-        (uint256 totalDeposit, uint256 _totalPaidOut, uint256 totalFee ) = _escrow.marketData();
+        (uint256 totalDeposit, uint256 _totalPaidOut, uint256 totalFee) = _escrow.marketData();
 
         // totalPot = totalDeposit + totalFee
         return sum == totalFee + totalDeposit;
