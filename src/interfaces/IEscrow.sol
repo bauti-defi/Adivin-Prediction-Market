@@ -11,6 +11,7 @@ interface IEscrow {
     struct MarketData {
         uint256 totalDeposited;
         uint256 totalPaidOut;
+        uint256 totalFee;
     }
 
     /// @dev Emitted when user tries to cashout an incorrect prediction

@@ -255,14 +255,13 @@ contract TestEscrow is BaseMarketTest {
         uint256[] memory partitions = new uint256[](1);
         partitions[0] = 100;
 
-
         vm.startPrank(admin, admin);
         vm.expectRevert(bytes("Escrow: recipients and shares arrays must be the same length"));
         escrow.setRevShareRecipients(recipients, partitions);
         vm.stopPrank();
     }
 
-     function testCantRevShareOfZero() public {
+    function testCantRevShareOfZero() public {
         address[] memory recipients = new address[](1);
         uint256[] memory partitions = new uint256[](1);
 

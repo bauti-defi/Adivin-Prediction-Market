@@ -17,6 +17,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
         _;
     }
 
+    // 0 to 100
     uint256 public protocolFee;
     PredictionMarket public immutable market;
     MarketData public marketData;
@@ -34,7 +35,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
         require(market.isNotStarted(), "Escrow: market has already started");
 
-        marketData = MarketData({totalDeposited: 0, totalPaidOut: 0});
+        marketData = MarketData({totalDeposited: 0, totalPaidOut: 0, totalFee: 0});
 
         // Set admin to EOA
         admin = tx.origin;
@@ -43,8 +44,10 @@ contract Escrow is IEscrow, ReentrancyGuard {
     /// ~~~~~~~~~~~~~~~~~~~~~~ EXTERNAL FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
 
     function buy(uint256 _predictionId, uint256 _amount) external override nonReentrant {
+        uint256 scaler = 10 ** paymentToken.decimals();
+
         // scale up according to decimals
-        uint256 depositAmount = _amount * 10 ** paymentToken.decimals();
+        uint256 depositAmount = _amount * scaler;
 
         // check if we have enough allowance
         require(paymentToken.allowance(msg.sender, address(this)) >= depositAmount, "Escrow: insufficient allowance");
@@ -52,15 +55,25 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // transfer their stables into the escrow
         paymentToken.safeTransferFrom(msg.sender, address(this), depositAmount);
 
+        // calculate fee
+        // ! fee is not scaled
+        uint256 fee = (_amount * protocolFee) / 100;
+
         // mint option tokens to the msg.sender
         // ! amount is not scaled
-        market.mint(msg.sender, _predictionId, _amount);
+        market.mint(msg.sender, _predictionId, _amount - fee);
+
+        // ! scale the fee
+        fee *= scaler;
 
         // update totalDeposited
-        marketData.totalDeposited += depositAmount;
+        marketData.totalDeposited += depositAmount - fee;
+
+        // update totalFee
+        marketData.totalFee += fee;
 
         // emit event
-        emit PredictionMade(msg.sender, _predictionId, _amount, marketData.totalDeposited);
+        emit PredictionMade(msg.sender, _predictionId, _amount - fee, marketData.totalDeposited);
     }
 
     function cashout(uint256 _predictionId) external override nonReentrant {
