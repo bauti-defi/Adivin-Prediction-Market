@@ -191,4 +191,84 @@ contract TestEscrow is BaseMarketTest {
         escrow.setProtocolFee(fee);
         vm.stopPrank();
     }
+
+    function testSetRevShareParticipants() public {
+        address[] memory participants = new address[](2);
+        participants[0] = vm.addr(1000);
+        participants[1] = vm.addr(1001);
+
+        uint256[] memory partitions = new uint256[](2);
+        partitions[0] = 40;
+        partitions[1] = 60;
+
+        vm.startPrank(admin, admin);
+        escrow.setRevShareRecipients(participants, partitions);
+        vm.stopPrank();
+
+        assertEq(escrow.revShareRecipients(0), participants[0]);
+        assertEq(escrow.revShareRecipients(1), participants[1]);
+        assertEq(escrow.revSharePartitions(0), partitions[0]);
+        assertEq(escrow.revSharePartitions(1), partitions[1]);
+    }
+
+    function testOnlyAdminCanSetRevShareParticipants(address attacker) public {
+        vm.assume(attacker != admin);
+
+        address[] memory participants = new address[](2);
+        participants[0] = vm.addr(1000);
+        participants[1] = vm.addr(1001);
+
+        uint256[] memory partitions = new uint256[](2);
+        partitions[0] = 40;
+        partitions[1] = 60;
+
+        vm.startPrank(attacker, attacker);
+        vm.expectRevert(bytes("Escrow: only admin can call this function"));
+        escrow.setRevShareRecipients(participants, partitions);
+        vm.stopPrank();
+    }
+
+    function testCantSetRevSharesToInvalidSum(uint256 sum, uint8 partitionCount) public {
+        vm.assume(sum != 100);
+        vm.assume(partitionCount > 0);
+        vm.assume(sum / partitionCount > 0);
+
+        address[] memory recipients = new address[](partitionCount);
+        uint256[] memory partitions = new uint256[](partitionCount);
+
+        for (uint8 i = 0; i < partitions.length; i++) {
+            recipients[i] = vm.addr(1000 + i);
+            partitions[i] = sum / uint256(partitionCount);
+        }
+
+        vm.startPrank(admin, admin);
+        vm.expectRevert(IEscrow.InvalidRevShareSum.selector);
+        escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+    }
+
+    function testCantSetRevSharesOfInvalidLength() public {
+        address[] memory recipients = new address[](2);
+        recipients[0] = vm.addr(1000);
+        recipients[1] = vm.addr(1001);
+
+        uint256[] memory partitions = new uint256[](1);
+        partitions[0] = 100;
+
+
+        vm.startPrank(admin, admin);
+        vm.expectRevert(bytes("Escrow: recipients and shares arrays must be the same length"));
+        escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+    }
+
+     function testCantRevShareOfZero() public {
+        address[] memory recipients = new address[](1);
+        uint256[] memory partitions = new uint256[](1);
+
+        vm.startPrank(admin, admin);
+        vm.expectRevert(bytes("Escrow: rev shares must be greater than 0"));
+        escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+    }
 }

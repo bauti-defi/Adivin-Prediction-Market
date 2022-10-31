@@ -118,13 +118,18 @@ contract Escrow is IEscrow, ReentrancyGuard {
         emit ProtocolFeeUpdated(oldFee, _protocolFee);
     }
 
-    function setRevShareRecipients(address[] calldata _recipients, uint256[] calldata _shares) external override onlyAdmin {
+    function setRevShareRecipients(address[] calldata _recipients, uint256[] calldata _shares)
+        external
+        override
+        onlyAdmin
+    {
         require(_recipients.length == _shares.length, "Escrow: recipients and shares arrays must be the same length");
         require(_recipients.length > 0, "Escrow: recipients and shares arrays must be greater than 0");
 
         // check if shares sum to 100
         uint256 _totalShares = 0;
         for (uint256 i = 0; i < _shares.length; i++) {
+            require(_shares[i] > 0, "Escrow: rev shares must be greater than 0");
             _totalShares += _shares[i];
         }
 
