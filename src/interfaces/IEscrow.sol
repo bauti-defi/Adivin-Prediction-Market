@@ -22,15 +22,24 @@ interface IEscrow {
     /// @dev Emitted when a fee outside of the range [0, 100) is set
     error InvalidProtocolFee(uint256 invalidProtocolFee);
 
+    /// @dev Emitted when a rev share array sum is not equal to 100
+    error InvalidRevShareSum();
+
     event PredictionMade(address indexed buyer, uint256 predictionId, uint256 amount, uint256 pot);
     event PredictionPaidOut(address indexed claimer, uint256 amount);
     event ProtocolFeeUpdated(uint256 oldFee, uint256 newFee);
+    event RevShareParticipantsUpdated(address[] participants, uint256[] shares);
+    event RevShareParticipantsCleared();
 
     function totalDeposited() external view returns (uint256);
 
     function totalPaidOut() external view returns (uint256);
 
     function setProtocolFee(uint256 _newFee) external;
+
+    function setRevShareRecipients(address[] calldata _recipients, uint256[] calldata _shares) external;
+
+    function clearRevShareRecipients() external;
 
     /// @dev Buy into the prediction market. The payment tokens are escrowed in exchange for
     /// prediction tokens.

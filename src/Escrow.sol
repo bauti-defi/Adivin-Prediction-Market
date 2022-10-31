@@ -21,6 +21,8 @@ contract Escrow is IEscrow, ReentrancyGuard {
     PredictionMarket public immutable market;
     MarketData public marketData;
     ERC20 public immutable paymentToken;
+    uint256[] public revSharePartitions;
+    address[] public revShareRecipients;
     address public immutable admin;
 
     constructor(address _token, address _market) {
@@ -113,7 +115,36 @@ contract Escrow is IEscrow, ReentrancyGuard {
         protocolFee = _protocolFee;
 
         // emit
-        emit ProtocolFeeUpdated(protocolFee, _protocolFee);
+        emit ProtocolFeeUpdated(oldFee, _protocolFee);
+    }
+
+    function setRevShareRecipients(address[] calldata _recipients, uint256[] calldata _shares) external override onlyAdmin {
+        require(_recipients.length == _shares.length, "Escrow: recipients and shares arrays must be the same length");
+        require(_recipients.length > 0, "Escrow: recipients and shares arrays must be greater than 0");
+
+        // check if shares sum to 100
+        uint256 _totalShares = 0;
+        for (uint256 i = 0; i < _shares.length; i++) {
+            _totalShares += _shares[i];
+        }
+
+        if (_totalShares != 100) revert InvalidRevShareSum();
+
+        // update state
+        revShareRecipients = _recipients;
+        revSharePartitions = _shares;
+
+        // emit
+        emit RevShareParticipantsUpdated(revShareRecipients, revSharePartitions);
+    }
+
+    function clearRevShareRecipients() external override onlyAdmin {
+        // update state
+        revShareRecipients = new address[](0);
+        revSharePartitions = new uint256[](0);
+
+        // emit
+        emit RevShareParticipantsCleared();
     }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ GETTERS ~~~~~~~~~~~~~~~~~~~~~~
