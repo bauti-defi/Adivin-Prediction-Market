@@ -119,6 +119,40 @@ contract Escrow is IEscrow, ReentrancyGuard {
         emit PredictionPaidOut(msg.sender, _payoutAmount);
     }
 
+    function payoutFees() external override nonReentrant {
+        // check if there are fees to pay out
+        require(marketData.totalFee > 0, "Escrow: No fees to pay out");
+
+        bool callerIsRevShareRecipient = false;
+
+        uint256 sumToPayOut = marketData.totalFee;
+
+        for (uint256 i = 0; i < revShareRecipients.length; i++) {
+
+            // check is caller is a rev share recipient
+            if (msg.sender == revShareRecipients[i]) {
+                callerIsRevShareRecipient = true;
+            }
+
+            // calculate the amount to pay out, already scaled
+            uint256 feeToPay = sumToPayOut * revSharePartitions[i] / 100;
+
+            // transfer fee to rev share recipient
+            paymentToken.safeTransfer(revShareRecipients[i], feeToPay);
+
+            // emit
+            emit RevSharePaidOut(revShareRecipients[i], feeToPay);
+        }
+
+        // update total fee
+        marketData.totalFee = 0;
+
+        // update total paid out
+        marketData.totalPaidOut += sumToPayOut;
+
+        require(callerIsRevShareRecipient || msg.sender == admin, "Escrow: Caller is not a rev share recipient OR admin");
+    }
+
     /// ~~~~~~~~~~~~~~~~~~~~~~ ADMIN FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
 
     function setProtocolFee(uint256 _protocolFee) external override onlyAdmin {

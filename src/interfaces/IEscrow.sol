@@ -31,6 +31,7 @@ interface IEscrow {
     event ProtocolFeeUpdated(uint256 oldFee, uint256 newFee);
     event RevShareParticipantsUpdated(address[] participants, uint256[] shares);
     event RevShareParticipantsCleared();
+    event RevSharePaidOut(address indexed recipient, uint256 amount);
 
     function totalDeposited() external view returns (uint256);
 
@@ -56,4 +57,8 @@ interface IEscrow {
     /// transferred to the claimer.
     /// @notice Reverts if the prediction is not winning.
     function cashout(uint256 _predictionId) external;
+
+    /// @notice only callable by admin OR rev share recipient. 
+    /// Distributes the current total fees to the rev share recipients.
+    function payoutFees() external;
 }
