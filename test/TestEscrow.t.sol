@@ -39,7 +39,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testCantMintMoreThanAllowedTokenSupplyCap() public openMarket {
+    function testCantMintMoreThanAllowedTokenSupplyCap() public openMarket checkInvariants {
         // 10 more than allowed cap
         uint256 amountToBuy = market.individualTokenSupplyCap() + 10;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
@@ -52,7 +52,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testCantBuyIfMarketIsPaused() public openMarket pauseMarket {
+    function testCantBuyIfMarketIsPaused() public openMarket pauseMarket checkInvariants{
         uint256 amountToBuy = 100;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
 
@@ -78,7 +78,7 @@ contract TestEscrow is BaseMarketTest {
         assertEq(market.balanceOf(user, 1), amountToBuy);
     }
 
-    function testCantBuyInvalidPredictionOption(uint8 predictionId) public openMarket {
+    function testCantBuyInvalidPredictionOption(uint8 predictionId) public openMarket checkInvariants {
         vm.assume(predictionId > market.optionCount() || predictionId == 0);
 
         uint256 amountToBuy = 100;

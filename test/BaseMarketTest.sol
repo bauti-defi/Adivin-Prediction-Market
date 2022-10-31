@@ -27,7 +27,10 @@ abstract contract BaseMarketTest is BaseTestEnv {
     modifier checkInvariants() {
         _;
         assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
-        if (!market.isFinished()) assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+        if (!market.isFinished()) {
+            assertTrue(Invariants.circulatingTokenSupplyEqEscrowBalance(market, escrow));
+            assertTrue(Invariants.circulatingTokenSupplyEqTotalPot(market, escrow));
+        }
         assertTrue(Invariants.totalTokenSupplyIsLessThanAllowedSupplyCap(market));
     }
 
