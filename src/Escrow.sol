@@ -12,7 +12,7 @@ import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 contract Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for ERC20;
 
-    modifier onlyAdmin(){
+    modifier onlyAdmin() {
         require(msg.sender == admin, "Escrow: only admin can call this function");
         _;
     }
@@ -107,7 +107,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
     /// ~~~~~~~~~~~~~~~~~~~~~~ ADMIN FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
 
     function setProtocolFee(uint256 _protocolFee) external onlyAdmin {
-        if(_protocolFee >= 100) revert InvalidProtocolFee(_protocolFee);
+        if (_protocolFee >= 100) revert InvalidProtocolFee(_protocolFee);
 
         uint256 oldFee = protocolFee;
         protocolFee = _protocolFee;
@@ -115,7 +115,6 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // emit
         emit ProtocolFeeUpdated(protocolFee, _protocolFee);
     }
-
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ GETTERS ~~~~~~~~~~~~~~~~~~~~~~
 

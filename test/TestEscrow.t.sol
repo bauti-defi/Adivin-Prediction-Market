@@ -163,4 +163,32 @@ contract TestEscrow is BaseMarketTest {
         escrow.cashout(1);
         vm.stopPrank();
     }
+
+    function testSetProtocolFee(uint256 fee) public {
+        vm.assume(fee < 100);
+
+        vm.startPrank(admin, admin);
+        escrow.setProtocolFee(fee);
+        vm.stopPrank();
+
+        assertEq(escrow.protocolFee(), fee);
+    }
+
+    function testOnlyAdminCanSetProtocolFee(address attacker) public {
+        vm.assume(attacker != admin);
+        
+        vm.startPrank(attacker, attacker);
+        vm.expectRevert(bytes("Escrow: only admin can call this function"));
+        escrow.setProtocolFee(1);
+        vm.stopPrank();
+    }
+
+    function testCantSetInvalidProtocolFee(uint256 fee) public {
+        vm.assume(fee >= 100);
+
+        vm.startPrank(admin, admin);
+        vm.expectRevert(abi.encodeWithSelector(IEscrow.InvalidProtocolFee.selector, fee));
+        escrow.setProtocolFee(fee);
+        vm.stopPrank();
+    }
 }
