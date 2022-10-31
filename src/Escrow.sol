@@ -106,7 +106,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ ADMIN FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
 
-    function setProtocolFee(uint256 _protocolFee) external onlyAdmin {
+    function setProtocolFee(uint256 _protocolFee) external override onlyAdmin {
         if (_protocolFee >= 100) revert InvalidProtocolFee(_protocolFee);
 
         uint256 oldFee = protocolFee;

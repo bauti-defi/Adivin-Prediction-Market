@@ -176,7 +176,7 @@ contract TestEscrow is BaseMarketTest {
 
     function testOnlyAdminCanSetProtocolFee(address attacker) public {
         vm.assume(attacker != admin);
-        
+
         vm.startPrank(attacker, attacker);
         vm.expectRevert(bytes("Escrow: only admin can call this function"));
         escrow.setProtocolFee(1);

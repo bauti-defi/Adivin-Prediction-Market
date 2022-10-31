@@ -30,6 +30,8 @@ interface IEscrow {
 
     function totalPaidOut() external view returns (uint256);
 
+    function setProtocolFee(uint256 _newFee) external;
+
     /// @dev Buy into the prediction market. The payment tokens are escrowed in exchange for
     /// prediction tokens.
     function buy(uint256 _predictionId, uint256 _amount) external;
