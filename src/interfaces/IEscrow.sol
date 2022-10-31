@@ -19,8 +19,12 @@ interface IEscrow {
     /// @dev Emitted when a user tries to cashout a token they do not have
     error InsufficientPredictionTokenBalance(uint256 predictionId);
 
+    /// @dev Emitted when a fee outside of the range [0, 100) is set
+    error InvalidProtocolFee(uint256 invalidProtocolFee);
+
     event PredictionMade(address indexed buyer, uint256 predictionId, uint256 amount, uint256 pot);
     event PredictionPaidOut(address indexed claimer, uint256 amount);
+    event ProtocolFeeUpdated(uint256 oldFee, uint256 newFee);
 
     function totalDeposited() external view returns (uint256);
 

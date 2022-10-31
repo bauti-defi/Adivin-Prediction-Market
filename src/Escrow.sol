@@ -12,9 +12,16 @@ import "@openzeppelin-contracts/security/ReentrancyGuard.sol";
 contract Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for ERC20;
 
+    modifier onlyAdmin(){
+        require(msg.sender == admin, "Escrow: only admin can call this function");
+        _;
+    }
+
+    uint256 public protocolFee;
     PredictionMarket public immutable market;
     MarketData public marketData;
     ERC20 public immutable paymentToken;
+    address public immutable admin;
 
     constructor(address _token, address _market) {
         paymentToken = ERC20(_token);
@@ -26,7 +33,12 @@ contract Escrow is IEscrow, ReentrancyGuard {
         require(market.isNotStarted(), "Escrow: market has already started");
 
         marketData = MarketData({totalDeposited: 0, totalPaidOut: 0});
+
+        // Set admin to EOA
+        admin = tx.origin;
     }
+
+    /// ~~~~~~~~~~~~~~~~~~~~~~ EXTERNAL FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
 
     function buy(uint256 _predictionId, uint256 _amount) external override nonReentrant {
         // scale up according to decimals
@@ -91,6 +103,21 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // emit
         emit PredictionPaidOut(msg.sender, _payoutAmount);
     }
+
+    /// ~~~~~~~~~~~~~~~~~~~~~~ ADMIN FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
+
+    function setProtocolFee(uint256 _protocolFee) external onlyAdmin {
+        if(_protocolFee >= 100) revert InvalidProtocolFee(_protocolFee);
+
+        uint256 oldFee = protocolFee;
+        protocolFee = _protocolFee;
+
+        // emit
+        emit ProtocolFeeUpdated(protocolFee, _protocolFee);
+    }
+
+
+    /// ~~~~~~~~~~~~~~~~~~~~~~ GETTERS ~~~~~~~~~~~~~~~~~~~~~~
 
     function totalPaidOut() external view override returns (uint256) {
         return marketData.totalPaidOut;
