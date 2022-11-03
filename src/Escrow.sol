@@ -69,7 +69,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // update totalDeposited
         marketData.totalDeposited += depositAmount - scaledFee;
 
-        if(scaledFee > 0){
+        if (scaledFee > 0) {
             // update totalFee
             marketData.totalFee += scaledFee;
         }
@@ -129,7 +129,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
         uint256 sumToPayOut = marketData.totalFee;
 
-        for (uint256 i = 0; i < revShareRecipients.length; i++) {
+        for (uint256 i = 0; i < revShareRecipients.length; ++i) {
             // check is caller is a rev share recipient
             if (msg.sender == revShareRecipients[i]) {
                 callerIsRevShareRecipient = true;
