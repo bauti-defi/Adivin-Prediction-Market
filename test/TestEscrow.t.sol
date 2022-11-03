@@ -303,5 +303,4 @@ contract TestEscrow is BaseMarketTest {
         escrow.clearRevShareRecipients();
         vm.stopPrank();
     }
-
 }

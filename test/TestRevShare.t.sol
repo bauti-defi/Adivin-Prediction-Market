@@ -14,7 +14,6 @@ import "@test/utils/E20.sol";
 import "@test/utils/Invariants.sol";
 
 contract TestEscrow is BaseMarketTest {
-
     modifier checkRevShareInvariants() {
         _;
         assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
@@ -39,7 +38,6 @@ contract TestEscrow is BaseMarketTest {
 
         revSharePartitions = new uint256[](2);
         revSharePartitions[0] = 50;
-
     }
 
     function testBasicRevSharePayout() public checkRevShareInvariants {
@@ -57,7 +55,5 @@ contract TestEscrow is BaseMarketTest {
 
         escrow.buy(1, amountToBuy);
         vm.stopPrank();
-       
     }
-
 }
