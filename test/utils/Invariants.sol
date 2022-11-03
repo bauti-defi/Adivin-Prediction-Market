@@ -62,7 +62,7 @@ library Invariants {
         // get escrow balance
         uint256 escrowBalance = paymentToken.balanceOf(address(_escrow));
 
-        return escrowBalance == _escrow.totalDeposited();
+        return escrowBalance == _escrow.totalDeposited() + _escrow.totalFee();
     }
 
     function totalTokenSupplyIsLessThanAllowedSupplyCap(PredictionMarket _market) external view returns (bool) {

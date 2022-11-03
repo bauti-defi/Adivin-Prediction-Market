@@ -58,7 +58,7 @@ interface IEscrow {
     /// @notice Reverts if the prediction is not winning.
     function cashout(uint256 _predictionId) external;
 
-    /// @notice only callable by admin OR rev share recipient. 
+    /// @notice only callable by admin OR rev share recipient.
     /// Distributes the current total fees to the rev share recipients.
     function payoutFees() external;
 }

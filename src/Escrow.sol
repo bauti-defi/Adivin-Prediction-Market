@@ -64,13 +64,13 @@ contract Escrow is IEscrow, ReentrancyGuard {
         market.mint(msg.sender, _predictionId, _amount - fee);
 
         // ! scale the fee
-        fee *= scaler;
+        uint256 scaledFee = fee * scaler;
 
         // update totalDeposited
-        marketData.totalDeposited += depositAmount - fee;
+        marketData.totalDeposited += depositAmount - scaledFee;
 
         // update totalFee
-        marketData.totalFee += fee;
+        marketData.totalFee += scaledFee;
 
         // emit event
         emit PredictionMade(msg.sender, _predictionId, _amount - fee, marketData.totalDeposited);
@@ -128,7 +128,6 @@ contract Escrow is IEscrow, ReentrancyGuard {
         uint256 sumToPayOut = marketData.totalFee;
 
         for (uint256 i = 0; i < revShareRecipients.length; i++) {
-
             // check is caller is a rev share recipient
             if (msg.sender == revShareRecipients[i]) {
                 callerIsRevShareRecipient = true;
@@ -150,7 +149,9 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // update total paid out
         marketData.totalPaidOut += sumToPayOut;
 
-        require(callerIsRevShareRecipient || msg.sender == admin, "Escrow: Caller is not a rev share recipient OR admin");
+        require(
+            callerIsRevShareRecipient || msg.sender == admin, "Escrow: Caller is not a rev share recipient OR admin"
+        );
     }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ ADMIN FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
