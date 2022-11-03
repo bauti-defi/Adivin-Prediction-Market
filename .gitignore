@@ -5,11 +5,10 @@ yarn-error.log
 # Compiler files
 cache/
 out/
+flattened/
 
 # Ignores development broadcast logs
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
+broadcast/
 
 # Dotenv file
 .env
