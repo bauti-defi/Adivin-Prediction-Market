@@ -33,7 +33,7 @@ contract Factory is IFactory {
         PredictionMarket market = new PredictionMarket(_predictionCount, _marketExpiration, _individualTokenSupplyCap);
 
         // create escrow
-        Escrow escrow = new Escrow(_paymentToken, address(market));
+        Escrow escrow = new Escrow(msg.sender, _paymentToken, address(market));
 
         // emit event
         emit PredictionMarketCreated(address(market), address(escrow), msg.sender);

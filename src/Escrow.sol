@@ -26,7 +26,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
     address[] public revShareRecipients;
     address public immutable admin;
 
-    constructor(address _token, address _market) {
+    constructor(address _admin, address _token, address _market) {
         paymentToken = ERC20(_token);
 
         require(_market != address(0), "Escrow: market address is 0");
@@ -37,8 +37,8 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
         marketData = MarketData({totalDeposited: 0, totalPaidOut: 0, totalFee: 0});
 
-        // Set admin to EOA
-        admin = tx.origin;
+        // this makes it multisig compatible if needed
+        admin = _admin;
     }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ EXTERNAL FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
@@ -69,8 +69,10 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // update totalDeposited
         marketData.totalDeposited += depositAmount - scaledFee;
 
-        // update totalFee
-        marketData.totalFee += scaledFee;
+        if(scaledFee > 0){
+            // update totalFee
+            marketData.totalFee += scaledFee;
+        }
 
         // emit event
         emit PredictionMade(msg.sender, _predictionId, _amount - fee, marketData.totalDeposited);
