@@ -39,7 +39,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testCantMintMoreThanAllowedTokenSupplyCap() public openMarket {
+    function testCantMintMoreThanAllowedTokenSupplyCap() public openMarket checkInvariants {
         // 10 more than allowed cap
         uint256 amountToBuy = market.individualTokenSupplyCap() + 10;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
@@ -52,7 +52,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testCantBuyIfMarketIsPaused() public openMarket pauseMarket {
+    function testCantBuyIfMarketIsPaused() public openMarket pauseMarket checkInvariants {
         uint256 amountToBuy = 100;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
 
@@ -78,7 +78,7 @@ contract TestEscrow is BaseMarketTest {
         assertEq(market.balanceOf(user, 1), amountToBuy);
     }
 
-    function testCantBuyInvalidPredictionOption(uint8 predictionId) public openMarket {
+    function testCantBuyInvalidPredictionOption(uint8 predictionId) public openMarket checkInvariants {
         vm.assume(predictionId > market.optionCount() || predictionId == 0);
 
         uint256 amountToBuy = 100;
@@ -161,6 +161,146 @@ contract TestEscrow is BaseMarketTest {
         vm.startPrank(user, user);
         vm.expectRevert(abi.encodeWithSelector(IEscrow.InsufficientPredictionTokenBalance.selector, 1));
         escrow.cashout(1);
+        vm.stopPrank();
+    }
+
+    function testSetProtocolFee(uint256 fee) public {
+        vm.assume(fee < 100);
+
+        vm.startPrank(admin, admin);
+        escrow.setProtocolFee(fee);
+        vm.stopPrank();
+
+        assertEq(escrow.protocolFee(), fee);
+    }
+
+    function testOnlyAdminCanSetProtocolFee(address attacker) public {
+        vm.assume(attacker != admin);
+
+        vm.startPrank(attacker, attacker);
+        vm.expectRevert(bytes("Escrow: only admin can call this function"));
+        escrow.setProtocolFee(1);
+        vm.stopPrank();
+    }
+
+    function testCantSetInvalidProtocolFee(uint256 fee) public {
+        vm.assume(fee >= 100);
+
+        vm.startPrank(admin, admin);
+        vm.expectRevert(abi.encodeWithSelector(IEscrow.InvalidProtocolFee.selector, fee));
+        escrow.setProtocolFee(fee);
+        vm.stopPrank();
+    }
+
+    function testSetRevShareParticipants() public {
+        address[] memory participants = new address[](2);
+        participants[0] = vm.addr(1000);
+        participants[1] = vm.addr(1001);
+
+        uint256[] memory partitions = new uint256[](2);
+        partitions[0] = 40;
+        partitions[1] = 60;
+
+        vm.startPrank(admin, admin);
+        escrow.setRevShareRecipients(participants, partitions);
+        vm.stopPrank();
+
+        assertEq(escrow.revShareRecipients(0), participants[0]);
+        assertEq(escrow.revShareRecipients(1), participants[1]);
+        assertEq(escrow.revSharePartitions(0), partitions[0]);
+        assertEq(escrow.revSharePartitions(1), partitions[1]);
+    }
+
+    function testOnlyAdminCanSetRevShareParticipants(address attacker) public {
+        vm.assume(attacker != admin);
+
+        address[] memory participants = new address[](2);
+        participants[0] = vm.addr(1000);
+        participants[1] = vm.addr(1001);
+
+        uint256[] memory partitions = new uint256[](2);
+        partitions[0] = 40;
+        partitions[1] = 60;
+
+        vm.startPrank(attacker, attacker);
+        vm.expectRevert(bytes("Escrow: only admin can call this function"));
+        escrow.setRevShareRecipients(participants, partitions);
+        vm.stopPrank();
+    }
+
+    function testCantSetRevSharesToInvalidSum(uint256 sum, uint8 partitionCount) public {
+        vm.assume(sum != 100);
+        vm.assume(partitionCount > 0);
+        vm.assume(sum / partitionCount > 0);
+
+        address[] memory recipients = new address[](partitionCount);
+        uint256[] memory partitions = new uint256[](partitionCount);
+
+        for (uint8 i = 0; i < partitions.length; i++) {
+            recipients[i] = vm.addr(1000 + i);
+            partitions[i] = sum / uint256(partitionCount);
+        }
+
+        vm.startPrank(admin, admin);
+        vm.expectRevert(IEscrow.InvalidRevShareSum.selector);
+        escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+    }
+
+    function testCantSetRevSharesOfInvalidLength() public {
+        address[] memory recipients = new address[](2);
+        recipients[0] = vm.addr(1000);
+        recipients[1] = vm.addr(1001);
+
+        uint256[] memory partitions = new uint256[](1);
+        partitions[0] = 100;
+
+        vm.startPrank(admin, admin);
+        vm.expectRevert(bytes("Escrow: recipients and shares arrays must be the same length"));
+        escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+    }
+
+    function testCantRevShareOfZero() public {
+        address[] memory recipients = new address[](1);
+        uint256[] memory partitions = new uint256[](1);
+
+        vm.startPrank(admin, admin);
+        vm.expectRevert(bytes("Escrow: rev shares must be greater than 0"));
+        escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+    }
+
+    function testClearRevShareRecipients() public {
+        address[] memory recipients = new address[](2);
+        recipients[0] = vm.addr(1000);
+        recipients[1] = vm.addr(1001);
+
+        uint256[] memory partitions = new uint256[](2);
+        partitions[0] = 40;
+        partitions[1] = 60;
+
+        vm.startPrank(admin, admin);
+        escrow.setRevShareRecipients(recipients, partitions);
+        vm.stopPrank();
+
+        vm.startPrank(admin, admin);
+        escrow.clearRevShareRecipients();
+        vm.stopPrank();
+
+        address[] memory clearedRecipients = escrow.getRevShareRecipients();
+        uint256[] memory clearedPartitions = escrow.getRevSharePartitions();
+
+        assertEq(clearedRecipients.length, 0);
+        assertEq(clearedPartitions.length, 0);
+    }
+
+    function testOnlyAdminCanClearRevShareRecipients(address attacker) public {
+        vm.assume(attacker != admin);
+
+        vm.startPrank(attacker, attacker);
+        vm.expectRevert(bytes("Escrow: only admin can call this function"));
+        escrow.clearRevShareRecipients();
         vm.stopPrank();
     }
 }

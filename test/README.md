@@ -27,6 +27,11 @@
 - [X] Can't submit market result unless oracle
 - [X] Can't submit market result unless market is closed
 - [X] Can't mint more of a token than the allowed individual supply cap
+- [X] Set rev share recipients
+- [X] Clear rev share recipients
+- [X] Can't set rev share recipients unless factory admin
+- [X] Can't set rev share to invalid sum (not equal to 100)
+
 
 ## Invariants
 
@@ -40,4 +45,7 @@ Sum(totalDeposited - totalPaidOut) = paymentToken.balanceOf(escrow)
 the funds are un-redeemable.
 
 ### 3
+Sum(totalDeposited + totalFee) = totalPot
+
+### 4
 token supply <= individual supply cap
