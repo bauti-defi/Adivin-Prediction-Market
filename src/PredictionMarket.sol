@@ -23,11 +23,16 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     uint256 public immutable expiration;
     uint256 public immutable individualTokenSupplyCap;
     string public name;
+    string public description;
 
     /// TODO: Add correct media URI
-    constructor(string memory _name, uint256 _optionCount, uint256 _expiration, uint256 _individualTokenSupplyCap)
-        ERC1155("https://localhost:3000")
-    {
+    constructor(
+        string memory _name,
+        string memory _description,
+        uint256 _optionCount,
+        uint256 _expiration,
+        uint256 _individualTokenSupplyCap
+    ) ERC1155("https://localhost:3000") {
         require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
         require(_expiration > block.timestamp, "PredictionMarket: expiration must be in the future");
 
@@ -50,6 +55,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         individualTokenSupplyCap = _individualTokenSupplyCap;
         state = MarketState.NOT_STARTED;
         name = _name;
+        description = _description;
     }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MODIFIERS ~~~~~~~~~~~~~~~~~~~~~~

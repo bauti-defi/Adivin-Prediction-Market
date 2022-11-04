@@ -29,7 +29,12 @@ contract TestFactory is BaseTestEnv {
 
         vm.prank(admin, admin);
         factory.createMarket(
-            "Test name", optionCount, marketExpiration, individualTokenSupplyCap, address(paymentToken)
+            "Test name",
+            "Test description",
+            optionCount,
+            marketExpiration,
+            individualTokenSupplyCap,
+            address(paymentToken)
         );
     }
 }

@@ -12,6 +12,7 @@ interface IFactory {
     /// @notice Only admin role is set on the market. Oracle and Escrow roles need to be set manually by the admin.
     function createMarket(
         string calldata _marketName,
+        string calldata _description,
         uint256 _predictionCount,
         uint256 _marketExpiration,
         uint256 _individualTokenSupplyCap,
