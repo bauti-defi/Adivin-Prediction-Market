@@ -21,7 +21,8 @@ contract Factory is IFactory {
         totalMarkets++;
 
         // create market
-        PredictionMarket market = new PredictionMarket(_marketName, _predictionCount, _marketExpiration, _individualTokenSupplyCap);
+        PredictionMarket market =
+            new PredictionMarket(_marketName, _predictionCount, _marketExpiration, _individualTokenSupplyCap);
 
         // create escrow
         Escrow escrow = new Escrow(msg.sender, _paymentToken, address(market));
