@@ -17,9 +17,6 @@ contract Escrow is IEscrow, ReentrancyGuard {
         _;
     }
 
-    // Scale uint values with this scaler to get "decimal" precision (10^-3 precision)
-    uint256 internal constant SCALER = 1_000;
-
     // 0 to 100
     uint256 public protocolFee;
     PredictionMarket public immutable market;
@@ -63,7 +60,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
         market.mint(msg.sender, _predictionId, _amount);
 
         // calculate the fee
-        uint256 fee = depositAmount * protocolFee / 100 ;
+        uint256 fee = depositAmount * protocolFee / 100;
 
         // update totalDeposited
         marketData.totalDeposited += depositAmount - fee;

@@ -241,6 +241,13 @@ contract TestEscrow is BaseMarketTest {
             partitions[i] = sum / uint256(partitionCount);
         }
 
+        // lets check our fuzzy inputs didnt cause a rounding error
+        uint256 sumToCheck = 0;
+        for(uint8 i = 0; i < partitions.length; i++) {
+            sumToCheck += partitions[i];
+        }
+        vm.assume(sumToCheck == sum);
+
         vm.startPrank(admin, admin);
         vm.expectRevert(IEscrow.InvalidRevShareSum.selector);
         escrow.setRevShareRecipients(recipients, partitions);

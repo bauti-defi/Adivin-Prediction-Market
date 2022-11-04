@@ -95,7 +95,7 @@ contract TestRevShare is BaseMarketTest {
         escrow.payoutFees();
 
         // divide by 100 twice since boh fee and partition are in %
-        assertEq(paymentToken.balanceOf(revShareRecipients[0]), amountToPay * fee * revSharePartitions[0] / 100 / 100 );
-        assertEq(paymentToken.balanceOf(revShareRecipients[1]), amountToPay * fee * revSharePartitions[1] / 100 / 100 );
+        assertEq(paymentToken.balanceOf(revShareRecipients[0]), amountToPay * fee * revSharePartitions[0] / 100 / 100);
+        assertEq(paymentToken.balanceOf(revShareRecipients[1]), amountToPay * fee * revSharePartitions[1] / 100 / 100);
     }
 }
