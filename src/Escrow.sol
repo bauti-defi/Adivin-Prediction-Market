@@ -55,27 +55,23 @@ contract Escrow is IEscrow, ReentrancyGuard {
         // transfer their stables into the escrow
         paymentToken.safeTransferFrom(msg.sender, address(this), depositAmount);
 
-        // calculate fee
-        // ! fee is not scaled
-        uint256 fee = (_amount * protocolFee) / 100;
-
         // mint option tokens to the msg.sender
         // ! amount is not scaled
-        market.mint(msg.sender, _predictionId, _amount - fee);
+        market.mint(msg.sender, _predictionId, _amount);
 
-        // ! scale the fee
-        uint256 scaledFee = fee * scaler;
+        // calculate the fee
+        uint256 fee = depositAmount * protocolFee  / 100;
 
         // update totalDeposited
-        marketData.totalDeposited += depositAmount - scaledFee;
+        marketData.totalDeposited += depositAmount - fee;
 
-        if (scaledFee > 0) {
+        if (fee > 0) {
             // update totalFee
-            marketData.totalFee += scaledFee;
+            marketData.totalFee += fee;
         }
 
         // emit event
-        emit PredictionMade(msg.sender, _predictionId, _amount - fee, marketData.totalDeposited);
+        emit PredictionMade(msg.sender, _predictionId, _amount, marketData.totalDeposited);
     }
 
     function cashout(uint256 _predictionId) external override nonReentrant {
