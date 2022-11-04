@@ -13,6 +13,8 @@ foundryup
 
 Also, make sure to run `yarn` to install all the dependencies.
 
+Finally, `yarn build` to build the project.
+
 ## How to Deploy
 
 Create a `.env` file in the root directory. Use `.env.example` as a template
@@ -31,7 +33,7 @@ Contract source code verification will have to be done manually on Polygonscan.
 
 First, run `yarn flatten` to flatten the contracts. This will create a `flattened` directory with the flattened contracts.
 
-Then, go to [Polygonscan](https://polygonscan.com/verifyContract) and verify the contracts. Make sure to select "Single File" and "Solidity Compiler" `0.8.17` for the compiler version.
+Then, go to [Polygonscan](https://polygonscan.com/verifyContract) and verify the contracts. Make sure to select "Single File", "Solidity Compiler" `0.8.17` for the compiler version, and "Optimized".
 
 When prompted for the source, copy and paste the contents of `flattened/Factory.flattened.sol` into the text box.
 

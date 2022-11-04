@@ -8,16 +8,6 @@ import "./interfaces/IFactory.sol";
 /// @author bauti.eth
 contract Factory is IFactory {
     uint256 public totalMarkets;
-    address immutable admin;
-
-    modifier onlyAdmin() {
-        if (msg.sender != admin) revert NotAdmin();
-        _;
-    }
-
-    constructor() {
-        admin = msg.sender;
-    }
 
     /// @notice Be careful what token you pass in. That is why this is admin only.
     function createMarket(
@@ -25,7 +15,7 @@ contract Factory is IFactory {
         uint256 _marketExpiration,
         uint256 _individualTokenSupplyCap,
         address _paymentToken
-    ) public onlyAdmin returns (address, address) {
+    ) public returns (address, address) {
         // increment counter
         totalMarkets++;
 
