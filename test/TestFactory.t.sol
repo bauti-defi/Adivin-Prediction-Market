@@ -28,6 +28,13 @@ contract TestFactory is BaseTestEnv {
         uint256 individualTokenSupplyCap = 100;
 
         vm.prank(admin, admin);
-        factory.createMarket(optionCount, marketExpiration, individualTokenSupplyCap, address(paymentToken));
+        factory.createMarket(
+            "Test name",
+            "Test description",
+            optionCount,
+            marketExpiration,
+            individualTokenSupplyCap,
+            address(paymentToken)
+        );
     }
 }

@@ -21,14 +21,14 @@ interface IEscrow {
     error InsufficientPredictionTokenBalance(uint256 predictionId);
 
     /// @dev Emitted when a fee outside of the range [0, 100) is set
-    error InvalidProtocolFee(uint256 invalidProtocolFee);
+    error InvalidMarketFee(uint256 invalidProtocolFee);
 
     /// @dev Emitted when a rev share array sum is not equal to 100
     error InvalidRevShareSum();
 
     event PredictionMade(address indexed buyer, uint256 predictionId, uint256 amount, uint256 pot);
     event PredictionPaidOut(address indexed claimer, uint256 amount);
-    event ProtocolFeeUpdated(uint256 oldFee, uint256 newFee);
+    event MarketFeeUpdated(uint256 oldFee, uint256 newFee);
     event RevShareParticipantsUpdated(address[] participants, uint256[] shares);
     event RevShareParticipantsCleared();
     event RevSharePaidOut(address indexed recipient, uint256 amount);
@@ -43,7 +43,7 @@ interface IEscrow {
 
     function getRevSharePartitions() external view returns (uint256[] memory);
 
-    function setProtocolFee(uint256 _newFee) external;
+    function setMarketFee(uint256 _newFee) external;
 
     function setRevShareRecipients(address[] calldata _recipients, uint256[] calldata _shares) external;
 

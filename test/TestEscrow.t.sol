@@ -164,31 +164,31 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testSetProtocolFee(uint256 fee) public {
+    function testSetMarketFee(uint256 fee) public {
         vm.assume(fee < 100);
 
         vm.startPrank(admin, admin);
-        escrow.setProtocolFee(fee);
+        escrow.setMarketFee(fee);
         vm.stopPrank();
 
-        assertEq(escrow.protocolFee(), fee);
+        assertEq(escrow.marketFee(), fee);
     }
 
-    function testOnlyAdminCanSetProtocolFee(address attacker) public {
+    function testOnlyAdminCanSetMarketFee(address attacker) public {
         vm.assume(attacker != admin);
 
         vm.startPrank(attacker, attacker);
         vm.expectRevert(bytes("Escrow: only admin can call this function"));
-        escrow.setProtocolFee(1);
+        escrow.setMarketFee(1);
         vm.stopPrank();
     }
 
-    function testCantSetInvalidProtocolFee(uint256 fee) public {
+    function testCantSetInvalidMarketFee(uint256 fee) public {
         vm.assume(fee >= 100);
 
         vm.startPrank(admin, admin);
-        vm.expectRevert(abi.encodeWithSelector(IEscrow.InvalidProtocolFee.selector, fee));
-        escrow.setProtocolFee(fee);
+        vm.expectRevert(abi.encodeWithSelector(IEscrow.InvalidMarketFee.selector, fee));
+        escrow.setMarketFee(fee);
         vm.stopPrank();
     }
 
@@ -240,6 +240,13 @@ contract TestEscrow is BaseMarketTest {
             recipients[i] = vm.addr(1000 + i);
             partitions[i] = sum / uint256(partitionCount);
         }
+
+        // lets check our fuzzy inputs didnt cause a rounding error
+        uint256 sumToCheck = 0;
+        for (uint8 i = 0; i < partitions.length; i++) {
+            sumToCheck += partitions[i];
+        }
+        vm.assume(sumToCheck == sum);
 
         vm.startPrank(admin, admin);
         vm.expectRevert(IEscrow.InvalidRevShareSum.selector);

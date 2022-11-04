@@ -64,7 +64,12 @@ abstract contract BaseMarketTest is BaseTestEnv {
         // create market
         vm.startPrank(admin, admin);
         (address _marketAddress, address _escrowAddress) = factory.createMarket(
-            OPTION_COUNT, block.timestamp + DURATION, INDIVIDUAL_TOKEN_SUPPLY_CAP, address(paymentToken)
+            "Test name",
+            "Test description",
+            OPTION_COUNT,
+            block.timestamp + DURATION,
+            INDIVIDUAL_TOKEN_SUPPLY_CAP,
+            address(paymentToken)
         );
         market = PredictionMarket(_marketAddress);
         escrow = Escrow(_escrowAddress);

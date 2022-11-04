@@ -31,6 +31,7 @@
 - [X] Clear rev share recipients
 - [X] Can't set rev share recipients unless factory admin
 - [X] Can't set rev share to invalid sum (not equal to 100)
+- [X] Payout rev share
 
 
 ## Invariants

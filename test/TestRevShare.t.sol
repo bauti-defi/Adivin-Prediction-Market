@@ -13,7 +13,7 @@ import "@src/Escrow.sol";
 import "@test/utils/E20.sol";
 import "@test/utils/Invariants.sol";
 
-contract TestEscrow is BaseMarketTest {
+contract TestRevShare is BaseMarketTest {
     modifier checkRevShareInvariants() {
         _;
         assertTrue(Invariants.totalEscrowedEqTokenBalance(escrow));
@@ -38,22 +38,64 @@ contract TestEscrow is BaseMarketTest {
 
         revSharePartitions = new uint256[](2);
         revSharePartitions[0] = 50;
+        revSharePartitions[1] = 50;
     }
 
     function testBasicRevSharePayout() public checkRevShareInvariants {
         uint256 fee = 1;
-        vm.prank(admin, admin);
-        escrow.setProtocolFee(fee);
+        vm.startPrank(admin);
+        escrow.setMarketFee(fee);
+
+        escrow.setRevShareRecipients(revShareRecipients, revSharePartitions);
+        vm.stopPrank();
 
         uint256 amountToBuy = 100;
 
-        address buyer = vm.addr(100);
+        // random buyer
+        address buyer = vm.addr(50);
         uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
 
-        vm.startPrank(buyer, buyer);
+        vm.startPrank(buyer);
         paymentToken.approve(address(escrow), amountToPay);
 
         escrow.buy(1, amountToBuy);
         vm.stopPrank();
+
+        vm.prank(admin);
+        escrow.payoutFees();
+
+        // done on paper
+        assertEq(paymentToken.balanceOf(revShareRecipients[0]), 500000);
+        assertEq(paymentToken.balanceOf(revShareRecipients[1]), 500000);
+    }
+
+    function testRevShare(uint8 fee, uint256 amountToBuy) public checkRevShareInvariants {
+        vm.assume(fee < 100);
+        vm.assume(fee > 0);
+        vm.assume(amountToBuy > 0);
+        vm.assume(amountToBuy < market.individualTokenSupplyCap());
+
+        vm.startPrank(admin);
+        escrow.setMarketFee(fee);
+        escrow.setRevShareRecipients(revShareRecipients, revSharePartitions);
+
+        vm.stopPrank();
+
+        // random buyer
+        address buyer = vm.addr(50);
+
+        uint256 amountToPay = dealPaymentToken(buyer, amountToBuy);
+
+        vm.startPrank(buyer);
+        paymentToken.approve(address(escrow), amountToPay);
+        escrow.buy(1, amountToBuy);
+        vm.stopPrank();
+
+        vm.prank(revShareRecipients[0]);
+        escrow.payoutFees();
+
+        // divide by 100 twice since boh fee and partition are in %
+        assertEq(paymentToken.balanceOf(revShareRecipients[0]), amountToPay * fee * revSharePartitions[0] / 100 / 100);
+        assertEq(paymentToken.balanceOf(revShareRecipients[1]), amountToPay * fee * revSharePartitions[1] / 100 / 100);
     }
 }
