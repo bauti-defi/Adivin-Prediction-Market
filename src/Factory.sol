@@ -11,6 +11,7 @@ contract Factory is IFactory {
 
     /// @notice Be careful what token you pass in. That is why this is admin only.
     function createMarket(
+        string calldata _marketName,
         uint256 _predictionCount,
         uint256 _marketExpiration,
         uint256 _individualTokenSupplyCap,
@@ -20,7 +21,7 @@ contract Factory is IFactory {
         totalMarkets++;
 
         // create market
-        PredictionMarket market = new PredictionMarket(_predictionCount, _marketExpiration, _individualTokenSupplyCap);
+        PredictionMarket market = new PredictionMarket(_marketName, _predictionCount, _marketExpiration, _individualTokenSupplyCap);
 
         // create escrow
         Escrow escrow = new Escrow(msg.sender, _paymentToken, address(market));
