@@ -30,15 +30,4 @@ contract TestFactory is BaseTestEnv {
         vm.prank(admin, admin);
         factory.createMarket(optionCount, marketExpiration, individualTokenSupplyCap, address(paymentToken));
     }
-
-    function testOnlyAdminCanCreateMarket() public {
-        console2.log("Creating market");
-
-        uint256 optionCount = 4;
-        uint256 marketExpiration = block.timestamp + 1000;
-        uint256 individualTokenSupplyCap = 100;
-
-        vm.expectRevert(IFactory.NotAdmin.selector);
-        factory.createMarket(optionCount, marketExpiration, individualTokenSupplyCap, address(paymentToken));
-    }
 }
