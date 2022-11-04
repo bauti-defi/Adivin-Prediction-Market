@@ -13,6 +13,8 @@ foundryup
 
 Also, make sure to run `yarn` to install all the dependencies.
 
+Finally, `yarn build` to build the project.
+
 ## How to Deploy
 
 Create a `.env` file in the root directory. Use `.env.example` as a template
