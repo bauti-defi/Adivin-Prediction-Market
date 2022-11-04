@@ -12,7 +12,7 @@ remappings=[
 
 
 [fuzz]
-runs = 256
+runs = 512
 
 [rpc_endpoints]
 mumbai = "${MUMBAI_RPC_URL}"
