@@ -18,7 +18,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
     }
 
     // 0 to 100
-    uint256 public protocolFee;
+    uint256 public marketFee;
     PredictionMarket public immutable market;
     MarketData public marketData;
     ERC20 public immutable paymentToken;
@@ -60,7 +60,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
         market.mint(msg.sender, _predictionId, _amount);
 
         // calculate the fee
-        uint256 fee = depositAmount * protocolFee / 100;
+        uint256 fee = depositAmount * marketFee / 100;
 
         // update totalDeposited
         marketData.totalDeposited += depositAmount - fee;
@@ -154,14 +154,14 @@ contract Escrow is IEscrow, ReentrancyGuard {
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ ADMIN FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~
 
-    function setProtocolFee(uint256 _protocolFee) external override onlyAdmin {
-        if (_protocolFee >= 100) revert InvalidProtocolFee(_protocolFee);
+    function setMarketFee(uint256 _marketFee) external override onlyAdmin {
+        if (_marketFee >= 100) revert InvalidMarketFee(_marketFee);
 
-        uint256 oldFee = protocolFee;
-        protocolFee = _protocolFee;
+        uint256 oldFee = marketFee;
+        marketFee = _marketFee;
 
         // emit
-        emit ProtocolFeeUpdated(oldFee, _protocolFee);
+        emit MarketFeeUpdated(oldFee, _marketFee);
     }
 
     function setRevShareRecipients(address[] calldata _recipients, uint256[] calldata _shares)

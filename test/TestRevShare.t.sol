@@ -44,7 +44,7 @@ contract TestRevShare is BaseMarketTest {
     function testBasicRevSharePayout() public checkRevShareInvariants {
         uint256 fee = 1;
         vm.startPrank(admin);
-        escrow.setProtocolFee(fee);
+        escrow.setMarketFee(fee);
 
         escrow.setRevShareRecipients(revShareRecipients, revSharePartitions);
         vm.stopPrank();
@@ -76,7 +76,7 @@ contract TestRevShare is BaseMarketTest {
         vm.assume(amountToBuy < market.individualTokenSupplyCap());
 
         vm.startPrank(admin);
-        escrow.setProtocolFee(fee);
+        escrow.setMarketFee(fee);
         escrow.setRevShareRecipients(revShareRecipients, revSharePartitions);
 
         vm.stopPrank();
