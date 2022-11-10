@@ -19,10 +19,15 @@ Finally, `yarn build` to build the project.
 
 Create a `.env` file in the root directory. Use `.env.example` as a template
 
+`source .env` to load the environment variables
+
 Deploy the contract factory
     
 ```bash
-forge script script/FactoryDeployer.s.sol:FactoryDeployer --rpc-url $MUMBAI_RPC_URL --broadcast 
+forge script script/FactoryDeployer.s.sol:FactoryDeployer --rpc-url $MUMBAI_RPC_URL --broadcast --optimizer-runs 2000 -vv --sig "deploy()"
+
+# OR deploy it with a test market and test erc20
+forge script script/FactoryDeployer.s.sol:FactoryDeployer --rpc-url $MUMBAI_RPC_URL --broadcast --optimizer-runs 2000 -vv --sig "deployWithTestMarket()"
 ```
 
 `MUMBAI_RPC_URL` can be replaced with `MAINNET_RPC_URL` if you want to deploy to mainnet.
