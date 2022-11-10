@@ -20,7 +20,9 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     /// @dev 0 means no winner yet.
     uint256 public winningPrediction;
-    uint256 public immutable expiration;
+
+    uint256 public immutable expirationDate;
+    uint256 public immutable resolveDate;
     uint256 public immutable individualTokenSupplyCap;
     string public name;
     string public description;
@@ -30,11 +32,13 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         string memory _description,
         string memory _mediaUri,
         uint256 _optionCount,
-        uint256 _expiration,
+        uint256 _expirationDate,
+        uint256 _resolveDate,
         uint256 _individualTokenSupplyCap
     ) ERC1155("") {
         require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
-        require(_expiration > block.timestamp, "PredictionMarket: expiration must be in the future");
+        require(_expirationDate > _resolveDate, "PredictionMarket: resolve date must be before expiration date");
+        require(_expirationDate > block.timestamp, "PredictionMarket: expiration date must be in the future");
 
         // set admin role to EOA
         _setupRole(ADMIN_ROLE, tx.origin);
@@ -46,7 +50,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         _setRoleAdmin(ORACLE_ROLE, ADMIN_ROLE);
 
         optionCount = _optionCount;
-        expiration = _expiration;
+        expirationDate = _expirationDate;
+        resolveDate = _resolveDate;
 
         if (_individualTokenSupplyCap == 0) {
             _individualTokenSupplyCap = type(uint256).max;
@@ -82,7 +87,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     modifier whenClosed() {
-        if (expiration > block.timestamp) revert MarketNotClosed();
+        if (expirationDate > block.timestamp) revert MarketNotClosed();
 
         // switch flag if necesarry
         if (state != MarketState.CLOSED) state = MarketState.CLOSED;
@@ -157,7 +162,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     function isClosed() external view override returns (bool) {
-        return state == MarketState.CLOSED || expiration <= block.timestamp;
+        return state == MarketState.CLOSED || expirationDate <= block.timestamp;
     }
 
     function isOpen() external view override returns (bool) {

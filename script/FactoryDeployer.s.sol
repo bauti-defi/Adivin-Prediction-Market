@@ -34,7 +34,8 @@ contract FactoryDeployer is Script {
             _description: "This is a test market",
             _mediaUri: "localhost:3000",
             _predictionCount: 2,
-            _marketExpiration: block.timestamp + 1 days,
+            _marketExpirationDate: block.timestamp + 2 days,
+            _marketResolveDate: block.timestamp + 1 days,
             _individualTokenSupplyCap: 100,
             _paymentToken: address(paymentToken)
         });

@@ -9,13 +9,14 @@ import "./interfaces/IFactory.sol";
 contract Factory is IFactory {
     uint256 public totalMarkets;
 
-    /// @notice Be careful what token you pass in. That is why this is admin only.
+    /// @notice Be careful what token you pass in.
     function createMarket(
         string calldata _marketName,
         string calldata _description,
         string calldata _mediaUri,
         uint256 _predictionCount,
-        uint256 _marketExpiration,
+        uint256 _marketExpirationDate,
+        uint256 _marketResolveDate,
         uint256 _individualTokenSupplyCap,
         address _paymentToken
     ) public returns (address, address) {
@@ -24,7 +25,7 @@ contract Factory is IFactory {
 
         // create market
         PredictionMarket market =
-        new PredictionMarket(_marketName, _description, _mediaUri, _predictionCount, _marketExpiration, _individualTokenSupplyCap);
+        new PredictionMarket(_marketName, _description, _mediaUri, _predictionCount, _marketExpirationDate, _marketResolveDate, _individualTokenSupplyCap);
 
         // create escrow
         Escrow escrow = new Escrow(msg.sender, _paymentToken, address(market));

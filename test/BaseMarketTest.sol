@@ -69,6 +69,7 @@ abstract contract BaseMarketTest is BaseTestEnv {
             "localhost:3000",
             OPTION_COUNT,
             block.timestamp + DURATION,
+            block.timestamp + DURATION / 2,
             INDIVIDUAL_TOKEN_SUPPLY_CAP,
             address(paymentToken)
         );

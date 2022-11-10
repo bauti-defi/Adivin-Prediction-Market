@@ -34,6 +34,7 @@ contract TestFactory is BaseTestEnv {
             "localhost:3000",
             optionCount,
             marketExpiration,
+            marketExpiration - 500,
             individualTokenSupplyCap,
             address(paymentToken)
         );

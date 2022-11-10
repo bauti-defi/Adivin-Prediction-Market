@@ -16,6 +16,7 @@ interface IFactory {
         string calldata _mediaUri,
         uint256 _predictionCount,
         uint256 _marketExpiration,
+        uint256 _marketResolveDate,
         uint256 _individualTokenSupplyCap,
         address _paymentToken
     ) external returns (address, address);
