@@ -13,6 +13,7 @@ interface IFactory {
     function createMarket(
         string calldata _marketName,
         string calldata _description,
+        string calldata _mediaUri,
         uint256 _predictionCount,
         uint256 _marketExpiration,
         uint256 _individualTokenSupplyCap,

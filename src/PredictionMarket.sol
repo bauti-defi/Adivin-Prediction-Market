@@ -25,14 +25,14 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     string public name;
     string public description;
 
-    /// TODO: Add correct media URI
     constructor(
         string memory _name,
         string memory _description,
+        string memory _mediaUri,
         uint256 _optionCount,
         uint256 _expiration,
         uint256 _individualTokenSupplyCap
-    ) ERC1155("https://localhost:3000") {
+    ) ERC1155("") {
         require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
         require(_expiration > block.timestamp, "PredictionMarket: expiration must be in the future");
 
@@ -56,6 +56,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         state = MarketState.NOT_STARTED;
         name = _name;
         description = _description;
+        _setURI(_mediaUri);
     }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MODIFIERS ~~~~~~~~~~~~~~~~~~~~~~

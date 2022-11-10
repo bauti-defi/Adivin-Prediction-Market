@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "forge-std/Script.sol";
 import "@src/Factory.sol";
 import "@test/utils/E20.sol";
+import "@src/PredictionMarket.sol";
 
 contract FactoryDeployer is Script {
     function deploy() external {
@@ -28,14 +29,18 @@ contract FactoryDeployer is Script {
         Factory factory = new Factory();
 
         // create a market
-        factory.createMarket({
+        (address marketAddr, address escrowAdrr) = factory.createMarket({
             _marketName: "Test Market",
             _description: "This is a test market",
+            _mediaUri: "localhost:3000",
             _predictionCount: 2,
             _marketExpiration: block.timestamp + 1 days,
             _individualTokenSupplyCap: 100,
             _paymentToken: address(paymentToken)
         });
+
+        PredictionMarket market = PredictionMarket(marketAddr);
+        market.setEscrow(escrowAdrr);
 
         vm.stopBroadcast();
     }

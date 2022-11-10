@@ -31,6 +31,7 @@ contract TestFactory is BaseTestEnv {
         factory.createMarket(
             "Test name",
             "Test description",
+            "localhost:3000",
             optionCount,
             marketExpiration,
             individualTokenSupplyCap,

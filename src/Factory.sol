@@ -13,6 +13,7 @@ contract Factory is IFactory {
     function createMarket(
         string calldata _marketName,
         string calldata _description,
+        string calldata _mediaUri,
         uint256 _predictionCount,
         uint256 _marketExpiration,
         uint256 _individualTokenSupplyCap,
@@ -23,7 +24,7 @@ contract Factory is IFactory {
 
         // create market
         PredictionMarket market =
-        new PredictionMarket(_marketName, _description, _predictionCount, _marketExpiration, _individualTokenSupplyCap);
+        new PredictionMarket(_marketName, _description, _mediaUri, _predictionCount, _marketExpiration, _individualTokenSupplyCap);
 
         // create escrow
         Escrow escrow = new Escrow(msg.sender, _paymentToken, address(market));

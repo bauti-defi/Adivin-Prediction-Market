@@ -66,6 +66,7 @@ abstract contract BaseMarketTest is BaseTestEnv {
         (address _marketAddress, address _escrowAddress) = factory.createMarket(
             "Test name",
             "Test description",
+            "localhost:3000",
             OPTION_COUNT,
             block.timestamp + DURATION,
             INDIVIDUAL_TOKEN_SUPPLY_CAP,
