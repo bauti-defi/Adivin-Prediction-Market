@@ -7,7 +7,6 @@ import "@src/PredictionMarket.sol";
 import "@test/utils/E20.sol";
 
 contract SDK is Script {
-
     address constant ESCROW = 0x07cD05272fb4D7D4aA768e212CDD545E8bFCb773;
     address constant MARKET = 0x13286455a0D417F650e10fcC59Eb0754fbD6037A;
 
@@ -38,10 +37,9 @@ contract SDK is Script {
 
         E20 paymentToken = E20(0x6932b1073CdBd6dc6F09bf118E004E93e8B890f0);
         paymentToken.approve(ESCROW, 1000 * 10 ** paymentToken.decimals());
-        
+
         escrow.buy(1, 100);
 
         vm.stopBroadcast();
     }
-
 }
