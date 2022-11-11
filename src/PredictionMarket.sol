@@ -28,7 +28,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     /// option 0 does not exist.
     TokenMetadata[] public tokenMetadata;
 
-    /// TODO: extra all this metadata into IPFS
+    /// TODO: extract all this metadata into IPFS
 
     constructor(
         string memory _name,
