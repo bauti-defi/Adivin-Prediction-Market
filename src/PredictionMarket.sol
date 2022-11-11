@@ -15,9 +15,6 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     MarketState public state;
 
-    /// @dev 0 is invalid. Count starts at 1.
-    uint256 public immutable optionCount;
-
     /// @dev 0 means no winner yet.
     uint256 public winningPrediction;
 
@@ -27,16 +24,24 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     string public name;
     string public description;
 
+    /// @dev indice 0 maps to option 1. indice 1 maps to option 2, etc.
+    /// option 0 does not exist.
+    TokenMetadata[] public tokenMetadata;
+
+    /// TODO: extra all this metadata into IPFS
+
     constructor(
         string memory _name,
         string memory _description,
         string memory _mediaUri,
-        uint256 _optionCount,
         uint256 _expirationDate,
         uint256 _resolveDate,
-        uint256 _individualTokenSupplyCap
+        uint256 _individualTokenSupplyCap,
+        string[] memory _tokenNames,
+        bytes6[] memory _tokenColors
     ) ERC1155("") {
-        require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
+        require(_tokenColors.length >= 2, "PredictionMarket: there must be at least two options");
+        require(_tokenColors.length == _tokenNames.length, "Factory: token colors and names must be the same length");
         require(_expirationDate > _resolveDate, "PredictionMarket: resolve date must be before expiration date");
         require(_expirationDate > block.timestamp, "PredictionMarket: expiration date must be in the future");
 
@@ -49,7 +54,15 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         // set Admin for oracle role
         _setRoleAdmin(ORACLE_ROLE, ADMIN_ROLE);
 
-        optionCount = _optionCount;
+        for (uint256 i = 0; i < _tokenNames.length;) {
+            tokenMetadata.push(IPredictionMarket.TokenMetadata({name: _tokenNames[i], color: _tokenColors[i]}));
+
+            unchecked {
+                // will never overflow
+                ++i;
+            }
+        }
+
         expirationDate = _expirationDate;
         resolveDate = _resolveDate;
 
@@ -219,7 +232,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     function _checkIsValidPrediction(uint256 predictionId) private view {
-        if (predictionId > optionCount || predictionId == 0) revert InvalidPredictionId(predictionId);
+        if (predictionId > getOptionCount() || predictionId == 0) revert InvalidPredictionId(predictionId);
     }
 
     function isWinner(uint256 _predictionId) external view validPrediction(_predictionId) returns (bool) {
@@ -232,5 +245,30 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     function setEscrow(address _escrowAddress) public onlyRole(ADMIN_ROLE) {
         _setupRole(ESCROW_ROLE, _escrowAddress);
+    }
+
+    function getColor(uint256 _tokenId) public view returns (bytes6) {
+        return getTokenMetadata(_tokenId).color;
+    }
+
+    function getName(uint256 _tokenId) public view returns (string memory) {
+        return getTokenMetadata(_tokenId).name;
+    }
+
+    function getTokenMetadata(uint256 _tokenId)
+        public
+        view
+        validPrediction(_tokenId)
+        returns (TokenMetadata memory option)
+    {
+        return tokenMetadata[_tokenId - 1];
+    }
+
+    function getAllTokenMetadata() public view returns (TokenMetadata[] memory) {
+        return tokenMetadata;
+    }
+
+    function getOptionCount() public view returns (uint256) {
+        return tokenMetadata.length;
     }
 }

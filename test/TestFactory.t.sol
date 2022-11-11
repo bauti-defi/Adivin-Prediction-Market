@@ -23,20 +23,32 @@ contract TestFactory is BaseTestEnv {
     function testCreateMarket() public {
         console2.log("Creating market");
 
-        uint256 optionCount = 4;
         uint256 marketExpiration = block.timestamp + 1000;
         uint256 individualTokenSupplyCap = 100;
 
+        // create color array
+        bytes6[] memory tokenColors = new bytes6[](2);
+        tokenColors[0] = 0x000000;
+        tokenColors[1] = 0x000000;
+
+        // create name array
+        string[] memory tokenNames = new string[](2);
+        tokenNames[0] = "Yes";
+        tokenNames[1] = "No";
+
         vm.prank(admin, admin);
         factory.createMarket(
-            "Test name",
-            "Test description",
-            "localhost:3000",
-            optionCount,
-            marketExpiration,
-            marketExpiration - 500,
-            individualTokenSupplyCap,
-            address(paymentToken)
+            IFactory.Parameters({
+                _marketName: "Test Market",
+                _description: "This is a test market",
+                _mediaUri: "localhost:3000",
+                _marketExpirationDate: marketExpiration,
+                _marketResolveDate: marketExpiration - 500,
+                _individualTokenSupplyCap: individualTokenSupplyCap,
+                _paymentToken: address(paymentToken),
+                _tokenNames: tokenNames,
+                _tokenColors: tokenColors
+            })
         );
     }
 }

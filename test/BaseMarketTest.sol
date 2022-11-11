@@ -6,6 +6,7 @@ import "forge-std/console2.sol";
 
 import "@test/BaseTestEnv.sol";
 import "@src/Factory.sol";
+import "@src/interfaces/IFactory.sol";
 import "@src/PredictionMarket.sol";
 import "@src/interfaces/IPredictionMarket.sol";
 import "@src/interfaces/IEscrow.sol";
@@ -61,17 +62,34 @@ abstract contract BaseMarketTest is BaseTestEnv {
     function setUp() public virtual override {
         super.setUp();
 
+        // create color array
+        bytes6[] memory tokenColors = new bytes6[](4);
+        tokenColors[0] = 0x000000;
+        tokenColors[1] = 0x000000;
+        tokenColors[2] = 0x000000;
+        tokenColors[3] = 0x000000;
+
+        // create name array
+        string[] memory tokenNames = new string[](4);
+        tokenNames[0] = "Yes";
+        tokenNames[1] = "No";
+        tokenNames[2] = "Maybe";
+        tokenNames[3] = "Probably";
+
         // create market
         vm.startPrank(admin, admin);
         (address _marketAddress, address _escrowAddress) = factory.createMarket(
-            "Test name",
-            "Test description",
-            "localhost:3000",
-            OPTION_COUNT,
-            block.timestamp + DURATION,
-            block.timestamp + DURATION / 2,
-            INDIVIDUAL_TOKEN_SUPPLY_CAP,
-            address(paymentToken)
+            IFactory.Parameters({
+                _marketName: "Test Market",
+                _description: "This is a test market",
+                _mediaUri: "localhost:3000",
+                _marketExpirationDate: block.timestamp + DURATION,
+                _marketResolveDate: block.timestamp + DURATION / 2,
+                _individualTokenSupplyCap: INDIVIDUAL_TOKEN_SUPPLY_CAP,
+                _paymentToken: address(paymentToken),
+                _tokenNames: tokenNames,
+                _tokenColors: tokenColors
+            })
         );
         market = PredictionMarket(_marketAddress);
         escrow = Escrow(_escrowAddress);
