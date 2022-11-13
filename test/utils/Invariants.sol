@@ -21,9 +21,9 @@ library Invariants {
 
         // prediction count starts at 1.
         // that means predictionCount = 5 is 5 options.
-        for (uint256 i = 1; i < _market.getOptionCount(); i++) {
-            sum += _market.totalSupply(i);
-        }
+        //for (uint256 i = 1; i < _market.getOptionCount(); i++) {
+        //    sum += _market.totalSupply(i);
+        //}
 
         // scale up sum to match payment token decimals
         sum *= 10 ** paymentToken.decimals();
@@ -42,9 +42,9 @@ library Invariants {
 
         // prediction count starts at 1.
         // that means predictionCount = 5 is 5 options.
-        for (uint256 i = 1; i < _market.getOptionCount(); i++) {
-            sum += _market.totalSupply(i);
-        }
+        //for (uint256 i = 1; i < _market.getOptionCount(); i++) {
+        //    sum += _market.totalSupply(i);
+        //}
 
         // scale up sum to match payment token decimals
         sum *= 10 ** paymentToken.decimals();
@@ -68,9 +68,9 @@ library Invariants {
     function totalTokenSupplyIsLessThanAllowedSupplyCap(PredictionMarket _market) external view returns (bool) {
         // prediction count starts at 1.
         // that means predictionCount = 5 is 5 options.
-        for (uint256 i = 1; i < _market.getOptionCount(); i++) {
-            if (_market.totalSupply(i) > _market.individualTokenSupplyCap()) return false;
-        }
+        //for (uint256 i = 1; i < _market.getOptionCount(); i++) {
+        //    if (_market.totalSupply(i) > _market.individualTokenSupplyCap()) return false;
+        //}
         return true;
     }
 }
