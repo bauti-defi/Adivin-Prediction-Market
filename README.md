@@ -24,6 +24,9 @@ Create a `.env` file in the root directory. Use `.env.example` as a template
 Deploy the contract factory
     
 ```bash
+# load the environment variables
+source .env
+
 forge script script/FactoryDeployer.s.sol:FactoryDeployer --rpc-url $MUMBAI_RPC_URL --broadcast --optimizer-runs 2000 -vv --sig "deploy()"
 
 # OR deploy it with a test market and test erc20
