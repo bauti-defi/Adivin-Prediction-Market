@@ -45,6 +45,7 @@ contract TestFactory is BaseTestEnv {
                 _marketExpirationDate: marketExpiration,
                 _marketResolveDate: marketExpiration - 500,
                 _individualTokenSupplyCap: individualTokenSupplyCap,
+                _individualTokenPrice: 1,
                 _paymentToken: address(paymentToken),
                 _tokenNames: tokenNames,
                 _tokenColors: tokenColors,

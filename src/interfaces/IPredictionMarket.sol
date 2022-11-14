@@ -37,7 +37,7 @@ interface IPredictionMarket {
 
     function mint(address _better, uint256 _predictionId, uint256 _amount) external;
 
-    function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts) external;
+    // function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts) external;
 
     function burn(address _claimer, uint256 _id, uint256 _amount) external;
 

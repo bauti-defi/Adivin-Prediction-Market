@@ -10,6 +10,7 @@ interface IFactory {
         uint256 _marketExpirationDate;
         uint256 _marketResolveDate;
         uint256 _individualTokenSupplyCap;
+        uint256 _individualTokenPrice;
         address _paymentToken;
         string[] _tokenNames;
         bytes6[] _tokenColors;

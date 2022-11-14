@@ -23,21 +23,24 @@ contract Escrow is IEscrow, ReentrancyGuard {
     MarketData public marketData;
     ERC20 public immutable paymentToken;
     uint256[] public revSharePartitions;
+    uint256 public individualTokenPrice;
     address[] public revShareRecipients;
     address public immutable admin;
     uint256 public eachTokenCost;
 
-    constructor(address _admin, address _token, address _market, uint256 _eachTokenCost) {
-        paymentToken = ERC20(_token);
-        eachTokenCost = _eachTokenCost;
-
+    constructor(address _admin, address _token, uint256 _individualTokenPrice, address _market) {
         require(_market != address(0), "Escrow: market address is 0");
+        require(_individualTokenPrice > 0, "Escrow: individual token price must be greater than 0");
+        require(_token != address(0), "Escrow: Token address cannot be 0");
 
+        paymentToken = ERC20(_token);
         market = PredictionMarket(_market);
 
         //require(market.isNotStarted(), "Escrow: market has already started");
 
         marketData = MarketData({totalDeposited: 0, totalPaidOut: 0, totalFee: 0});
+
+        individualTokenPrice = _individualTokenPrice;
 
         // this makes it multisig compatible if needed
         admin = _admin;
@@ -49,7 +52,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
         uint256 decimals = 10 ** paymentToken.decimals();
 
         // scale up according to decimals
-        uint256 depositAmount = _amount * eachTokenCost * decimals;
+        uint256 depositAmount = individualTokenPrice * _amount * decimals;
 
         // check if we have enough allowance
         require(paymentToken.allowance(msg.sender, address(this)) >= depositAmount, "Escrow: insufficient allowance");
