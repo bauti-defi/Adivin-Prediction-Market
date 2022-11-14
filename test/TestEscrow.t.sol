@@ -67,7 +67,7 @@ contract TestEscrow is BaseMarketTest {
     function testBuy(uint256 amountToBuy) public openMarket pauseMarket unpauseMarket checkInvariants {
         vm.assume(amountToBuy > 0);
         vm.assume(amountToBuy <= market.individualTokenSupplyCap());
-        
+
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
 
         vm.startPrank(user, user);
