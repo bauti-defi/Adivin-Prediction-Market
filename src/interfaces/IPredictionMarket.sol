@@ -28,9 +28,16 @@ interface IPredictionMarket {
         FINISHED
     }
 
+    struct TokenMetadata {
+        string name;
+        /// @dev colors are stored as hex strings, e.i #0335fc
+        /// indice 0 maps to token 1, indice 1 maps to token 2, etc.
+        bytes6 color;
+    }
+
     function mint(address _better, uint256 _predictionId, uint256 _amount) external;
 
-    function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts) external;
+    // function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts) external;
 
     function burn(address _claimer, uint256 _id, uint256 _amount) external;
 

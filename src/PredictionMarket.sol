@@ -15,26 +15,35 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     MarketState public state;
 
-    /// @dev 0 is invalid. Count starts at 1.
-    uint256 public immutable optionCount;
-
     /// @dev 0 means no winner yet.
     uint256 public winningPrediction;
-    uint256 public immutable expiration;
+
+    uint256 public immutable expirationDate;
+    uint256 public immutable resolveDate;
     uint256 public immutable individualTokenSupplyCap;
     string public name;
     string public description;
 
-    /// TODO: Add correct media URI
+    /// @dev indice 0 maps to option 1. indice 1 maps to option 2, etc.
+    /// option 0 does not exist.
+    TokenMetadata[] public tokenMetadata;
+
+    /// TODO: extract all this metadata into IPFS
+
     constructor(
         string memory _name,
         string memory _description,
-        uint256 _optionCount,
-        uint256 _expiration,
-        uint256 _individualTokenSupplyCap
-    ) ERC1155("https://localhost:3000") {
-        require(_optionCount >= 2, "PredictionMarket: there must be at least two options");
-        require(_expiration > block.timestamp, "PredictionMarket: expiration must be in the future");
+        string memory _mediaUri,
+        uint256 _expirationDate,
+        uint256 _resolveDate,
+        uint256 _individualTokenSupplyCap,
+        string[] memory _tokenNames,
+        bytes6[] memory _tokenColors
+    ) ERC1155("") {
+        require(_tokenColors.length >= 2, "PredictionMarket: there must be at least two options");
+        require(_tokenColors.length == _tokenNames.length, "Factory: token colors and names must be the same length");
+        require(_expirationDate > _resolveDate, "PredictionMarket: resolve date must be before expiration date");
+        require(_expirationDate > block.timestamp, "PredictionMarket: expiration date must be in the future");
 
         // set admin role to EOA
         _setupRole(ADMIN_ROLE, tx.origin);
@@ -45,8 +54,17 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         // set Admin for oracle role
         _setRoleAdmin(ORACLE_ROLE, ADMIN_ROLE);
 
-        optionCount = _optionCount;
-        expiration = _expiration;
+        for (uint256 i = 0; i < _tokenNames.length;) {
+            tokenMetadata.push(IPredictionMarket.TokenMetadata({name: _tokenNames[i], color: _tokenColors[i]}));
+
+            unchecked {
+                // will never overflow
+                ++i;
+            }
+        }
+
+        expirationDate = _expirationDate;
+        resolveDate = _resolveDate;
 
         if (_individualTokenSupplyCap == 0) {
             _individualTokenSupplyCap = type(uint256).max;
@@ -56,6 +74,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         state = MarketState.NOT_STARTED;
         name = _name;
         description = _description;
+        _setURI(_mediaUri);
     }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MODIFIERS ~~~~~~~~~~~~~~~~~~~~~~
@@ -81,7 +100,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     modifier whenClosed() {
-        if (expiration > block.timestamp) revert MarketNotClosed();
+        if (expirationDate > block.timestamp) revert MarketNotClosed();
 
         // switch flag if necesarry
         if (state != MarketState.CLOSED) state = MarketState.CLOSED;
@@ -117,19 +136,19 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         _mint(_better, _predictionId, _amount, "");
     }
 
-    function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts)
-        external
-        override
-        whenOpen
-        onlyRole(ESCROW_ROLE)
-    {
-        for (uint256 i = 0; i < _predictionIds.length; i++) {
-            _checkIsValidPrediction(_predictionIds[i]);
-            _checkMintDoesNotExceedMaxSupply(_predictionIds[i], _amounts[i]);
-        }
+    // function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts)
+    //     external
+    //     override
+    //     whenOpen
+    //     onlyRole(ESCROW_ROLE)
+    // {
+    //     for (uint256 i = 0; i < _predictionIds.length; i++) {
+    //         _checkIsValidPrediction(_predictionIds[i]);
+    //         _checkMintDoesNotExceedMaxSupply(_predictionIds[i], _amounts[i]);
+    //     }
 
-        _mintBatch(_better, _predictionIds, _amounts, "");
-    }
+    //     _mintBatch(_better, _predictionIds, _amounts, "");
+    // }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET STATE SETTERS ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -156,7 +175,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     function isClosed() external view override returns (bool) {
-        return state == MarketState.CLOSED || expiration <= block.timestamp;
+        return state == MarketState.CLOSED || expirationDate <= block.timestamp;
     }
 
     function isOpen() external view override returns (bool) {
@@ -213,7 +232,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     function _checkIsValidPrediction(uint256 predictionId) private view {
-        if (predictionId > optionCount || predictionId == 0) revert InvalidPredictionId(predictionId);
+        if (predictionId > this.getOptionCount() || predictionId == 0) revert InvalidPredictionId(predictionId);
     }
 
     function isWinner(uint256 _predictionId) external view validPrediction(_predictionId) returns (bool) {
@@ -226,5 +245,18 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     function setEscrow(address _escrowAddress) public onlyRole(ADMIN_ROLE) {
         _setupRole(ESCROW_ROLE, _escrowAddress);
+    }
+
+    function getTokenMetadata(uint256 _tokenId)
+        public
+        view
+        validPrediction(_tokenId)
+        returns (TokenMetadata memory option)
+    {
+        return tokenMetadata[_tokenId - 1];
+    }
+
+    function getOptionCount() public view returns (uint256) {
+        return tokenMetadata.length;
     }
 }

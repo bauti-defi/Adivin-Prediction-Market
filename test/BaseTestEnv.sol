@@ -11,8 +11,6 @@ import "@test/utils/E20.sol";
 import "@src/Factory.sol";
 
 abstract contract BaseTestEnv is Test {
-    uint256 public constant predictionCount = 3;
-
     address public admin;
     address public oracle;
     E20 public paymentToken;

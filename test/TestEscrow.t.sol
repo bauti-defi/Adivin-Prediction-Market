@@ -64,8 +64,10 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testBuy() public openMarket pauseMarket unpauseMarket checkInvariants {
-        uint256 amountToBuy = 100;
+    function testBuy(uint256 amountToBuy) public openMarket pauseMarket unpauseMarket checkInvariants {
+        vm.assume(amountToBuy > 0);
+        vm.assume(amountToBuy <= market.individualTokenSupplyCap());
+
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
 
         vm.startPrank(user, user);
@@ -79,7 +81,7 @@ contract TestEscrow is BaseMarketTest {
     }
 
     function testCantBuyInvalidPredictionOption(uint8 predictionId) public openMarket checkInvariants {
-        vm.assume(predictionId > market.optionCount() || predictionId == 0);
+        vm.assume(predictionId > market.getOptionCount() || predictionId == 0);
 
         uint256 amountToBuy = 100;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
@@ -131,6 +133,8 @@ contract TestEscrow is BaseMarketTest {
 
         vm.startPrank(user, user);
         paymentToken.approve(address(escrow), amountToPay);
+
+        console.logUint(market.getOptionCount());
 
         escrow.buy(LOSING_PREDICTION, amountToBuy);
         vm.stopPrank();
