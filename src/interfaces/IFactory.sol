@@ -14,7 +14,6 @@ interface IFactory {
         address _paymentToken;
         string[] _tokenNames;
         bytes6[] _tokenColors;
-        uint256 _tokenCost;
         string _categories;
     }
 

@@ -26,7 +26,6 @@ contract Escrow is IEscrow, ReentrancyGuard {
     uint256 public individualTokenPrice;
     address[] public revShareRecipients;
     address public immutable admin;
-    uint256 public eachTokenCost;
 
     constructor(address _admin, address _token, uint256 _individualTokenPrice, address _market) {
         require(_market != address(0), "Escrow: market address is 0");

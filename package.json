@@ -39,8 +39,5 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  },
-  "dependencies": {
-    "solc": "^0.8.17"
   }
 }
