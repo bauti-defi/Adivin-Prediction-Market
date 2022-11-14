@@ -27,11 +27,12 @@ contract Factory is IFactory {
             _parameters._marketResolveDate, 
             _parameters._individualTokenSupplyCap,
             _parameters._tokenNames, 
-            _parameters._tokenColors
+            _parameters._tokenColors,
+            _parameters._categories
         );
 
         // create escrow
-        Escrow escrow = new Escrow(msg.sender, _parameters._paymentToken, address(market));
+        Escrow escrow = new Escrow(msg.sender, _parameters._paymentToken, address(market), _parameters._tokenCost);
 
         // emit event
         emit PredictionMarketCreated(address(market), address(escrow), msg.sender);

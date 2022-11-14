@@ -88,7 +88,9 @@ abstract contract BaseMarketTest is BaseTestEnv {
                 _individualTokenSupplyCap: INDIVIDUAL_TOKEN_SUPPLY_CAP,
                 _paymentToken: address(paymentToken),
                 _tokenNames: tokenNames,
-                _tokenColors: tokenColors
+                _tokenColors: tokenColors,
+                _tokenCost: 10,
+                _categories: "Sports, Medicine"
             })
         );
         market = PredictionMarket(_marketAddress);

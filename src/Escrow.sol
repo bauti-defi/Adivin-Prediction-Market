@@ -25,9 +25,11 @@ contract Escrow is IEscrow, ReentrancyGuard {
     uint256[] public revSharePartitions;
     address[] public revShareRecipients;
     address public immutable admin;
+    uint256 public eachTokenCost;
 
-    constructor(address _admin, address _token, address _market) {
+    constructor(address _admin, address _token, address _market, uint256 _eachTokenCost) {
         paymentToken = ERC20(_token);
+        eachTokenCost = _eachTokenCost;
 
         require(_market != address(0), "Escrow: market address is 0");
 
@@ -47,7 +49,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
         uint256 decimals = 10 ** paymentToken.decimals();
 
         // scale up according to decimals
-        uint256 depositAmount = _amount * decimals;
+        uint256 depositAmount = _amount * eachTokenCost * decimals;
 
         // check if we have enough allowance
         require(paymentToken.allowance(msg.sender, address(this)) >= depositAmount, "Escrow: insufficient allowance");
