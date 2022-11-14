@@ -86,6 +86,7 @@ abstract contract BaseMarketTest is BaseTestEnv {
                 _marketExpirationDate: block.timestamp + DURATION,
                 _marketResolveDate: block.timestamp + DURATION / 2,
                 _individualTokenSupplyCap: INDIVIDUAL_TOKEN_SUPPLY_CAP,
+                _individualTokenPrice: 1,
                 _paymentToken: address(paymentToken),
                 _tokenNames: tokenNames,
                 _tokenColors: tokenColors

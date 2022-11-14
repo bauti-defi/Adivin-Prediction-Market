@@ -48,6 +48,7 @@ contract FactoryDeployer is Script {
                 _marketExpirationDate: block.timestamp + 2 days,
                 _marketResolveDate: block.timestamp + 1 days,
                 _individualTokenSupplyCap: 100,
+                _individualTokenPrice: 1,
                 _paymentToken: address(paymentToken),
                 _tokenNames: tokenNames,
                 _tokenColors: tokenColors

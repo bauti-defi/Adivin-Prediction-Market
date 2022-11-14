@@ -259,5 +259,4 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     function getOptionCount() public view returns (uint256) {
         return tokenMetadata.length;
     }
-
 }
