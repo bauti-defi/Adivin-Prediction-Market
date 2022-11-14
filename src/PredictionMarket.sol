@@ -136,19 +136,19 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         _mint(_better, _predictionId, _amount, "");
     }
 
-    function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts)
-        external
-        override
-        whenOpen
-        onlyRole(ESCROW_ROLE)
-    {
-        for (uint256 i = 0; i < _predictionIds.length; i++) {
-            _checkIsValidPrediction(_predictionIds[i]);
-            _checkMintDoesNotExceedMaxSupply(_predictionIds[i], _amounts[i]);
-        }
+    // function mintBatch(address _better, uint256[] calldata _predictionIds, uint256[] calldata _amounts)
+    //     external
+    //     override
+    //     whenOpen
+    //     onlyRole(ESCROW_ROLE)
+    // {
+    //     for (uint256 i = 0; i < _predictionIds.length; i++) {
+    //         _checkIsValidPrediction(_predictionIds[i]);
+    //         _checkMintDoesNotExceedMaxSupply(_predictionIds[i], _amounts[i]);
+    //     }
 
-        _mintBatch(_better, _predictionIds, _amounts, "");
-    }
+    //     _mintBatch(_better, _predictionIds, _amounts, "");
+    // }
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET STATE SETTERS ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -232,7 +232,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     }
 
     function _checkIsValidPrediction(uint256 predictionId) private view {
-        if (predictionId > getOptionCount() || predictionId == 0) revert InvalidPredictionId(predictionId);
+        if (predictionId > this.getOptionCount() || predictionId == 0) revert InvalidPredictionId(predictionId);
     }
 
     function isWinner(uint256 _predictionId) external view validPrediction(_predictionId) returns (bool) {
@@ -247,14 +247,6 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         _setupRole(ESCROW_ROLE, _escrowAddress);
     }
 
-    function getColor(uint256 _tokenId) public view returns (bytes6) {
-        return getTokenMetadata(_tokenId).color;
-    }
-
-    function getName(uint256 _tokenId) public view returns (string memory) {
-        return getTokenMetadata(_tokenId).name;
-    }
-
     function getTokenMetadata(uint256 _tokenId)
         public
         view
@@ -264,11 +256,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         return tokenMetadata[_tokenId - 1];
     }
 
-    function getAllTokenMetadata() public view returns (TokenMetadata[] memory) {
-        return tokenMetadata;
-    }
-
     function getOptionCount() public view returns (uint256) {
         return tokenMetadata.length;
     }
+
 }

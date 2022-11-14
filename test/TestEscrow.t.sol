@@ -132,7 +132,7 @@ contract TestEscrow is BaseMarketTest {
         vm.startPrank(user, user);
         paymentToken.approve(address(escrow), amountToPay);
 
-        console.logUint(market.getAllTokenMetadata().length);
+        console.logUint(market.getOptionCount());
 
         escrow.buy(LOSING_PREDICTION, amountToBuy);
         vm.stopPrank();

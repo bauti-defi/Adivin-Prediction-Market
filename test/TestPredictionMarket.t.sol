@@ -92,19 +92,19 @@ contract TestPredictionMarket is BaseMarketTest {
         market.mint(attacker, 1, 1);
     }
 
-    function testOnlyEscrowCanBatchMint(address attacker) public openMarket {
-        vm.assume(attacker != address(escrow));
+    // function testOnlyEscrowCanBatchMint(address attacker) public openMarket {
+    //     vm.assume(attacker != address(escrow));
 
-        uint256[] memory ids = new uint256[](4);
-        ids[0] = 1;
-        ids[1] = 2;
-        ids[2] = 3;
-        ids[3] = 4;
+    //     uint256[] memory ids = new uint256[](4);
+    //     ids[0] = 1;
+    //     ids[1] = 2;
+    //     ids[2] = 3;
+    //     ids[3] = 4;
 
-        vm.startPrank(attacker, attacker);
-        vm.expectRevert();
-        market.mintBatch(attacker, ids, ids);
-    }
+    //     vm.startPrank(attacker, attacker);
+    //     vm.expectRevert();
+    //     market.mintBatch(attacker, ids, ids);
+    // }
 
     function testOnlyEscrowCanBurn(address attacker) public openMarket {
         vm.assume(attacker != address(escrow));
