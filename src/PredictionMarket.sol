@@ -42,8 +42,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     ) ERC1155("") {
         require(_tokenColors.length >= 2, "PredictionMarket: there must be at least two options");
         require(_tokenColors.length == _tokenNames.length, "Factory: token colors and names must be the same length");
-        require(_expirationDate > _resolveDate, "PredictionMarket: resolve date must be before expiration date");
-        require(_expirationDate > block.timestamp, "PredictionMarket: expiration date must be in the future");
+        require(_expirationDate < _resolveDate, "PredictionMarket: expiration date must be before resolve date");
+        require(_resolveDate > block.timestamp, "PredictionMarket: resolve date must be in the future");
 
         // set admin role to EOA
         _setupRole(ADMIN_ROLE, tx.origin);
