@@ -33,12 +33,6 @@ interface IEscrow {
     event RevShareParticipantsCleared();
     event RevSharePaidOut(address indexed recipient, uint256 amount);
 
-    function totalDeposited() external view returns (uint256);
-
-    function totalPaidOut() external view returns (uint256);
-
-    function totalFee() external view returns (uint256);
-
     function getRevShareRecipients() external view returns (address[] memory);
 
     function getRevSharePartitions() external view returns (uint256[] memory);
