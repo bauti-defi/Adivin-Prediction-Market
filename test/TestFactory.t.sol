@@ -26,7 +26,7 @@ contract TestFactory is BaseTestEnv {
 
     function createMarket(address creator, uint256 fee, bool shouldRevert) private {
         console2.log("Creating market");
-        
+
         uint256 marketExpiration = block.timestamp + 1000;
         uint256 individualTokenSupplyCap = 100;
 
@@ -41,7 +41,7 @@ contract TestFactory is BaseTestEnv {
         tokenNames[1] = "No";
 
         vm.prank(creator, creator);
-        if(shouldRevert) vm.expectRevert(bytes("Factory: not enough MATIC to create market"));
+        if (shouldRevert) vm.expectRevert(bytes("Factory: not enough MATIC to create market"));
         factory.createMarket{value: fee}(
             IFactory.Parameters({
                 _marketName: "Test Market",
@@ -62,7 +62,7 @@ contract TestFactory is BaseTestEnv {
         createMarket(user, 0, false);
     }
 
-    function testCreateMarketWithFee(uint fee) public {
+    function testCreateMarketWithFee(uint256 fee) public {
         vm.prank(admin, admin);
         factory.setMarketCreationFee(fee);
 
@@ -74,7 +74,7 @@ contract TestFactory is BaseTestEnv {
         assertEq(address(user).balance, 0);
     }
 
-    function testCantCreateMarketWithInsufficientBalance(uint fee) public {
+    function testCantCreateMarketWithInsufficientBalance(uint256 fee) public {
         vm.assume(fee > 0);
 
         vm.prank(admin, admin);

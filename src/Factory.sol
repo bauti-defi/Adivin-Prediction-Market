@@ -8,18 +8,17 @@ import "./interfaces/IFactory.sol";
 
 /// @author bauti.eth
 contract Factory is IFactory {
-
     uint256 public totalMarkets;
     uint256 public marketCreationFee;
 
     address admin;
 
-    modifier onlyAdmin(){
+    modifier onlyAdmin() {
         require(msg.sender == admin, "Factory: only admin can call this function");
         _;
     }
 
-    constructor(){
+    constructor() {
         admin = msg.sender;
     }
 
@@ -70,5 +69,4 @@ contract Factory is IFactory {
     function cashout() external onlyAdmin {
         payable(admin).transfer(address(this).balance);
     }
-
 }
