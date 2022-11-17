@@ -8,10 +8,25 @@ import "./interfaces/IFactory.sol";
 
 /// @author bauti.eth
 contract Factory is IFactory {
+
     uint256 public totalMarkets;
+    uint256 public marketCreationFee;
+
+    address admin;
+
+    modifier onlyAdmin(){
+        require(msg.sender == admin, "Factory: only admin can call this function");
+        _;
+    }
+
+    constructor(){
+        admin = msg.sender;
+    }
 
     /// @notice Be careful what token you pass in.
-    function createMarket(Parameters calldata parameters) public returns (address, address) {
+    function createMarket(Parameters calldata parameters) public payable returns (address, address) {
+        require(msg.value >= marketCreationFee, "Factory: not enough MATIC to create market");
+
         // copy it into memory to avoid stack too deep
         Parameters memory _parameters = parameters;
 
@@ -43,4 +58,17 @@ contract Factory is IFactory {
 
         return (address(market), address(escrow));
     }
+
+    function setMarketCreationFee(uint256 _marketCreationFee) external onlyAdmin {
+        marketCreationFee = _marketCreationFee;
+    }
+
+    function setAdmin(address _admin) external onlyAdmin {
+        admin = _admin;
+    }
+
+    function cashout() external onlyAdmin {
+        payable(admin).transfer(address(this).balance);
+    }
+
 }

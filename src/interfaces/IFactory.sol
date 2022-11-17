@@ -23,5 +23,5 @@ interface IFactory {
 
     /// @notice Creates a new prediction market that is NOT OPEN.
     /// @notice Only admin role is set on the market. Oracle and Escrow roles need to be set manually by the admin.
-    function createMarket(Parameters calldata _parameters) external returns (address, address);
+    function createMarket(Parameters calldata _parameters) payable external returns (address, address);
 }
