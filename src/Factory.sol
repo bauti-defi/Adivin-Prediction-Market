@@ -41,7 +41,8 @@ contract Factory is IFactory {
             _parameters._marketResolveDate, 
             _parameters._individualTokenSupplyCap,
             _parameters._tokenNames, 
-            _parameters._tokenColors
+            _parameters._tokenColors,
+            _parameters._categories
         );
 
         // create escrow

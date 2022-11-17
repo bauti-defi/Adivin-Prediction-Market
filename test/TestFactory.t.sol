@@ -53,7 +53,8 @@ contract TestFactory is BaseTestEnv {
                 _individualTokenPrice: 1,
                 _paymentToken: address(paymentToken),
                 _tokenNames: tokenNames,
-                _tokenColors: tokenColors
+                _tokenColors: tokenColors,
+                _categories: "Sports, Medicine"
             })
         );
     }

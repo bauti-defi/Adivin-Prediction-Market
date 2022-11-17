@@ -23,6 +23,7 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
     uint256 public immutable individualTokenSupplyCap;
     string public name;
     string public description;
+    string public categories;
 
     /// @dev indice 0 maps to option 1. indice 1 maps to option 2, etc.
     /// option 0 does not exist.
@@ -38,7 +39,8 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         uint256 _resolveDate,
         uint256 _individualTokenSupplyCap,
         string[] memory _tokenNames,
-        bytes6[] memory _tokenColors
+        bytes6[] memory _tokenColors,
+        string memory _categories
     ) ERC1155("") {
         require(_tokenColors.length >= 2, "PredictionMarket: there must be at least two options");
         require(_tokenColors.length == _tokenNames.length, "Factory: token colors and names must be the same length");
@@ -65,13 +67,14 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
         expirationDate = _expirationDate;
         resolveDate = _resolveDate;
+        categories = _categories;
 
         if (_individualTokenSupplyCap == 0) {
             _individualTokenSupplyCap = type(uint256).max;
         }
 
         individualTokenSupplyCap = _individualTokenSupplyCap;
-        state = MarketState.NOT_STARTED;
+        state = MarketState.OPEN;
         name = _name;
         description = _description;
         _setURI(_mediaUri);

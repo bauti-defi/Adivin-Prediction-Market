@@ -35,7 +35,7 @@ contract Escrow is IEscrow, ReentrancyGuard {
         paymentToken = ERC20(_token);
         market = PredictionMarket(_market);
 
-        require(market.isNotStarted(), "Escrow: market has already started");
+        //require(market.isNotStarted(), "Escrow: market has already started");
 
         marketData = MarketData({totalDeposited: 0, totalPaidOut: 0, totalFee: 0});
 

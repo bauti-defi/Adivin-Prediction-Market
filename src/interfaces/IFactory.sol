@@ -14,6 +14,7 @@ interface IFactory {
         address _paymentToken;
         string[] _tokenNames;
         bytes6[] _tokenColors;
+        string _categories;
     }
 
     error NotAdmin();
