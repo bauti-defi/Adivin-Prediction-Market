@@ -10,16 +10,6 @@ contract SDK is Script {
     address constant ESCROW = 0x07cD05272fb4D7D4aA768e212CDD545E8bFCb773;
     address constant MARKET = 0x13286455a0D417F650e10fcC59Eb0754fbD6037A;
 
-    function openMarket() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(deployerPrivateKey);
-        PredictionMarket market = PredictionMarket(MARKET);
-
-        market.open();
-
-        vm.stopBroadcast();
-    }
-
     function setEscrowRole() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);

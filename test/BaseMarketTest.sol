@@ -47,11 +47,6 @@ abstract contract BaseMarketTest is BaseTestEnv {
         _;
     }
 
-    modifier openMarket() {
-        vm.prank(admin, admin);
-        market.open();
-        _;
-    }
 
     function dealPaymentToken(address _user, uint256 _amount) internal returns (uint256) {
         uint256 scaledAmount = _amount * 10 ** paymentToken.decimals();

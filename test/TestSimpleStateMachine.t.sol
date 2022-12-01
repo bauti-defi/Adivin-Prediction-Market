@@ -7,13 +7,7 @@ import "forge-std/console2.sol";
 import "@test/BaseMarketTest.sol";
 
 contract TestSimpleStateMachine is BaseMarketTest {
-    function setUp() public override {
-        super.setUp();
 
-        console2.log("Opening market");
-        vm.prank(admin, admin);
-        market.open();
-    }
 
     function testMultiBuy(uint8 buyerCount) public checkInvariants {
         uint256 amountToBuy = 100;

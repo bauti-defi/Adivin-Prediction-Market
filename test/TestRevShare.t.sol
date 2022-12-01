@@ -28,10 +28,6 @@ contract TestRevShare is BaseMarketTest {
     function setUp() public override {
         super.setUp();
 
-        console2.log("Opening market");
-        vm.prank(admin, admin);
-        market.open();
-
         revShareRecipients = new address[](2);
         revShareRecipients[0] = vm.addr(100);
         revShareRecipients[1] = vm.addr(101);

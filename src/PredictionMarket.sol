@@ -87,11 +87,6 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
         _;
     }
 
-    modifier whenNotStarted() {
-        require(this.isNotStarted(), "PredictionMarket: market has already started");
-        _;
-    }
-
     modifier whenOpen() {
         if (!this.isOpen()) revert MarketNotOpen();
         _;
@@ -155,9 +150,6 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     /// ~~~~~~~~~~~~~~~~~~~~~~ MARKET STATE SETTERS ~~~~~~~~~~~~~~~~~~~~~~
 
-    function open() external whenNotStarted onlyRole(ADMIN_ROLE) {
-        state = MarketState.OPEN;
-    }
 
     function unpause() external whenPaused onlyRole(ADMIN_ROLE) {
         state = MarketState.OPEN;
@@ -171,10 +163,6 @@ contract PredictionMarket is IPredictionMarket, ERC1155, AccessControl, ERC1155S
 
     function isUndefined() external view returns (bool) {
         return state == MarketState.UNDEFINED;
-    }
-
-    function isNotStarted() external view override returns (bool) {
-        return state == MarketState.NOT_STARTED;
     }
 
     function isClosed() external view override returns (bool) {

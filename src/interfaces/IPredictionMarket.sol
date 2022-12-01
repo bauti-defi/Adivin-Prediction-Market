@@ -14,14 +14,12 @@ interface IPredictionMarket {
 
     /// @dev
     /// UNDEFINED: market has not been created yet
-    /// NOT_STARTED: market has been created but not opened yet
     /// OPEN: market is open for predictions
     /// PAUSED: market is paused !! by admin, only for emergencies
     /// CLOSED: market is closed, no more predictions can be made. Cannot cashout yet.
     /// FINISHED: market is finished, no more predictions can be made. Predictions can be cashed out.
     enum MarketState {
         UNDEFINED,
-        NOT_STARTED,
         OPEN,
         PAUSED,
         CLOSED,
@@ -47,13 +45,9 @@ interface IPredictionMarket {
 
     function isClosed() external view returns (bool);
 
-    function isNotStarted() external view returns (bool);
-
     function isUndefined() external view returns (bool);
 
     function isPaused() external view returns (bool);
-
-    function open() external;
 
     function unpause() external;
 
