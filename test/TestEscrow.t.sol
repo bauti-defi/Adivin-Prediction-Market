@@ -27,19 +27,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testCantBuyIfMarketIsNotOpen() public {
-        uint256 amountToBuy = 100;
-        uint256 amountToPay = dealPaymentToken(user, amountToBuy);
-
-        vm.startPrank(user, user);
-        paymentToken.approve(address(escrow), amountToPay);
-
-        vm.expectRevert(IPredictionMarket.MarketNotOpen.selector);
-        escrow.buy(1, amountToBuy);
-        vm.stopPrank();
-    }
-
-    function testCantMintMoreThanAllowedTokenSupplyCap() public openMarket checkInvariants {
+    function testCantMintMoreThanAllowedTokenSupplyCap() public checkInvariants {
         // 10 more than allowed cap
         uint256 amountToBuy = market.individualTokenSupplyCap() + 10;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
@@ -52,7 +40,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testCantBuyIfMarketIsPaused() public openMarket pauseMarket checkInvariants {
+    function testCantBuyIfMarketIsPaused() public pauseMarket checkInvariants {
         uint256 amountToBuy = 100;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
 
@@ -64,7 +52,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testBuy(uint256 amountToBuy) public openMarket pauseMarket unpauseMarket checkInvariants {
+    function testBuy(uint256 amountToBuy) public pauseMarket unpauseMarket checkInvariants {
         vm.assume(amountToBuy > 0);
         vm.assume(amountToBuy <= market.individualTokenSupplyCap());
 
@@ -80,7 +68,7 @@ contract TestEscrow is BaseMarketTest {
         assertEq(market.balanceOf(user, 1), amountToBuy);
     }
 
-    function testCantBuyInvalidPredictionOption(uint8 predictionId) public openMarket checkInvariants {
+    function testCantBuyInvalidPredictionOption(uint8 predictionId) public checkInvariants {
         vm.assume(predictionId > market.getOptionCount() || predictionId == 0);
 
         uint256 amountToBuy = 100;
@@ -94,7 +82,7 @@ contract TestEscrow is BaseMarketTest {
         vm.stopPrank();
     }
 
-    function testCashout() public checkInvariants openMarket {
+    function testCashout() public checkInvariants {
         uint256 amountToBuy = 100;
         uint256 amountToPay = dealPaymentToken(user, amountToBuy);
 
@@ -124,7 +112,7 @@ contract TestEscrow is BaseMarketTest {
         assertEq(market.balanceOf(user, 1), 0);
     }
 
-    function testCantCashoutBadPrediction() public openMarket checkInvariants {
+    function testCantCashoutBadPrediction() public checkInvariants {
         uint256 WINNING_PREDICTION = 1;
         uint256 LOSING_PREDICTION = 2;
 
@@ -155,7 +143,7 @@ contract TestEscrow is BaseMarketTest {
         assertEq(market.balanceOf(user, LOSING_PREDICTION), amountToBuy);
     }
 
-    function testCantCashoutPredictionNotHeldInWallet() public openMarket checkInvariants {
+    function testCantCashoutPredictionNotHeldInWallet() public checkInvariants {
         // skip forward so market expires
         skip(DURATION * 2);
 
